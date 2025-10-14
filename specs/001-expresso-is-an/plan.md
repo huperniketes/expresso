@@ -14,7 +14,7 @@ This plan outlines the implementation of an interactive command-line tool for ev
 **Language/Version**: ANSI C17 (Core application), C++17 (for ANTLR-generated parser)
 **Primary Dependencies**: ANTLR4 (Parser Generator)
 **Storage**: N/A (In-memory evaluation)
-**Testing**: [NEEDS CLARIFICATION: C/C++ testing framework for a CMake project]
+**Testing**: GoogleTest (for C++) and a custom assert framework (for C), managed by CTest
 **Target Platform**: Linux, macOS, Windows (CLI)
 **Project Type**: Single project (Library + CLI)
 **Performance Goals**: < 50ms average evaluation time
@@ -33,6 +33,8 @@ This plan outlines the implementation of an interactive command-line tool for ev
 - **Additional Constraints**: **VIOLATION**. The constitution states "All code... is written in ANSI C17," but the plan requires C++ for the ANTLR parser.
 
 The violations are justified in the Complexity Tracking section below.
+
+**Resolution**: The constitutional violations are formally acknowledged and accepted for this feature, as the use of C++ for the ANTLR parser is a direct trade-off for development speed and parser correctness, which outweighs the complexity cost of a multi-language setup in this specific context.
 
 ## Project Structure
 

@@ -80,6 +80,10 @@ The project is broken down into phases. We will start with project setup and fou
 - `[ ]` **T020**: [Test] Write unit tests for division-by-zero and numeric overflow scenarios in `tests/unit/core/`. [P]
 - `[ ]` **T021**: Add checks in `src/core/evaluator.c` to detect division-by-zero and numeric overflow and return specific errors.
 - `[ ]` **T022**: Implement the internal error logging mechanism to write to `expresso-error.log` as defined in `spec.md §NFR-001`.
+- `[ ]` **T023**: [Test] Write an integration test that pipes non-printable characters (e.g., ASCII control codes) to the CLI and asserts that they are handled gracefully (e.g., ignored or reported as an error). [P]
+- `[ ]` **T024**: Implement logic in the CLI input handling (`src/cli/main.c`) to filter out or report errors on non-printable characters before they are sent to the parser.
+- `[ ]` **T025**: [Test] Write a unit test that attempts to parse an expression with nesting depth greater than a defined limit (e.g., 100) and asserts that a specific 'nesting depth exceeded' error is returned. [P]
+- `[ ]` **T026**: Implement a check in the parser or evaluator to track expression nesting depth and return an error if it exceeds a predefined limit.
 
 ---
 

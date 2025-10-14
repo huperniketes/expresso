@@ -17,12 +17,11 @@ This guide provides instructions on how to build and run the Expresso evaluator 
     ```
 
 2.  **Generate the ANTLR Parser**:
-    - Place the ANTLR4 JAR file in a known location.
-    - Run the following command from the root of the repository to generate the C++ parser code:
+    - Download the ANTLR 4 complete JAR and place it in the root of this repository (e.g., `antlr-4.13.1-complete.jar`).
+    - Run the following command from the root of the repository to generate the C++ parser code. Replace `antlr-4.x-complete.jar` with the actual filename of the JAR.
       ```sh
-      java -jar /path/to/antlr-4.x-complete.jar -Dlanguage=Cpp -o src/parser/generated -visitor -no-listener src/parser/Expresso.g4
+      java -jar antlr-4.x-complete.jar -Dlanguage=Cpp -o src/parser/generated -visitor -no-listener src/parser/Expresso.g4
       ```
-      *(Note: The exact path to the `.g4` file may vary based on the final project structure)*
 
 3.  **Configure with CMake**:
     - Create a build directory:
