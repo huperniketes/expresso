@@ -39,10 +39,14 @@ Data Flow:
 All values are immutable
 
 - Type Coercion Rules:
-  - Arithmetic: Promote int to float if mixed.
-  - String + expr: Interpret right-hand expression as a string.
-  - expr + String: Interpret right-hand expression as a number.
-  - Bitwise: Only on ints/chars (treat char as int).
+  - **Core Principle**: There must be NO Undefined Behavior in the Expresso language and runtime. Any operation that would be undefined in C MUST be detected prior to execution and reported as a runtime error.
+  - **Default Arithmetic Conversions**: For all binary arithmetic operations where behavior is not otherwise explicitly defined, Expresso adopts the 'usual arithmetic conversions' as defined by the C17 standard to determine the result type.
+  - **String Operations**:
+    - `String + <any>`: The right-hand operand is converted to its string representation and concatenated. This is the only non-comparison operator defined for a left-hand `String` operand.
+    - `<numeric type> <op> String`: Where `<op>` is any arithmetic, logical, bitwise, or comparison operator, the runtime will attempt to parse the `String` operand as a number.
+      - If the parse is successful, the resulting numeric value is used in the operation, with types promoted as per the Default Arithmetic Conversions.
+      - If the parse is invalid, a runtime error is reported and evaluation ends.
+  - **Bitwise Operations**: Bitwise operators are only valid for `int` and `char` types. A `char` operand is promoted to an `int` before the operation.
 
 ### Error Types
 - SyntaxError: Struct with line, col, msg.
@@ -67,13 +71,26 @@ The Expresso grammar is defined in grammar-spec.md.
 | Command | Behavior |
 |---------|----------|
 | !help | Print a help table including: command-line arguments (`-e`, `-o`), available meta-commands, a list of supported operators by precedence, data types (integer, float, string, char), and a usage example like "1+2*3 → 7". |
-| !history | List last entries: "#1: input → output". |
-| !n | Re-input history[n]. |
-| !clear | Clear history; print "Session history cleared." |
+| !history | List the last 10 unique input lines from history, formatted according to FR-008. |
+| !n | Re-inputs the expression from history at the 1-based index `n`. If `n` is out of bounds (less than 1 or greater than the number of items in history), the system MUST print an error "Error: history index out of bounds" and re-prompt the user. |
+| !clear | Clear the input history and print the message "Session history cleared." to stdout. |
 
 ### Evaluation Rules
 - Support nested depth ≤255 (recursion limit with stack check).
 - String limit: 9,999 characters.
+
+#### Bitwise Shift Behavior
+The behavior for invalid shift operations is explicitly defined to avoid undefined behavior:
+- **Negative Shift Amount**: If the shift amount is negative, the direction of the shift is reversed, and the absolute value of the amount is used. For example, `x << -2` is equivalent to `x >> 2`, and `x >> -3` is equivalent to `x << 3`.
+- **Shift Amount Greater Than or Equal to Bit-Width**:
+  - For a left shift (`<<`), the result is always `0`.
+  - For a right shift (`>>`) on a signed negative number, the result is `-1` (arithmetic shift).
+  - For a right shift (`>>`) on a positive or unsigned number, the result is `0`.
+
+#### Floating-Point Behavior
+- **Special Values**: Any arithmetic operation that results in `NaN` (Not a Number) MUST cause the evaluation to stop immediately and report a runtime error. The language does not support `Infinity` or `NaN` as valid values.
+- **Ternary Operator Exception**: The ternary operator (`? :`) may produce a valid result even if one of its result branches would produce `NaN`, as long as that branch is not taken. For example, `1 > 0 ? 5 : (0.0/0.0)` is valid and results in `5`.
+
 - Examples:
   - `1 + 2 * 3` → `7` (int).
   - `"hello" + " world"` → `"hello world"`.
@@ -159,7 +176,7 @@ A user encounters various error conditions or wishes to terminate the session cl
 - **Non-printable Characters**: Non-printable characters (excluding CR/LF) are ignored in interactive input.
 - **Empty/Whitespace Input**: Empty lines or lines containing only whitespace/ignored non-printable characters are ignored, and the prompt is re-displayed.
 - **Nested Expression Depth**: Expressions with nesting depth greater than 255 are reported as errors.
-- **Invalid Command-Line Arguments**: Unrecognized flags or malformed arguments result in an error and usage message.
+- **Invalid Command-Line Arguments**: Unrecognized flags or malformed arguments MUST cause Expresso to print the error message "expresso: Invalid arguments. -h for help" to stderr and terminate.
 - **Resource Cleanup Failure**: System handles potential failures during resource cleanup on exit.
 
 ## Requirements *(mandatory)*
@@ -168,13 +185,14 @@ A user encounters various error conditions or wishes to terminate the session cl
 
 - **FR-001**: The system MUST prompt the user for input with the string "expr>".
 - **FR-002**: The system MUST accept ASCII-encoded user input.
-- **FR-003**: The system MUST limit interactive user input lines to 1023 bytes.
+- **FR-003**: The system MUST include a line input and editing component that accepts no more than 1023 characters from the TTY terminal.
+- **FR-003a**: For file-based or stdin redirected input, lines exceeding 1023 characters MUST be truncated. The system shall report an error for the truncation and then attempt to evaluate the partial (1023-character) input.
 - **FR-004**: The system MUST report an error for incomplete expressions.
-- **FR-005**: The system MUST report an error for lines ending with a backslash.
-- **FR-006**: The system MUST report an error for extraneous input after a complete expression on the same line.
-- **FR-007**: The system MUST retain a history of the last 10 input lines.
-- **FR-008**: The system MUST allow users to access input history using up- and down-arrow keys.
-- **FR-009**: The system MUST ignore non-printable characters in interactive input that do not affect the input line or commands (excluding carriage-return or linefeed).
+- **FR-005**: The system MUST report an error for lines ending with a backslash (`\`) followed immediately by a newline character, as this is not a valid escape sequence in Expresso.
+- **FR-006**: The system MUST report an error for any extraneous input which follows a valid, complete expression on the same line and is not part of a subsequent valid expression.
+- **FR-007**: The system MUST retain a history of the last 10 unique input lines. Uniqueness is determined on a case-sensitive basis. Leading whitespace MUST be preserved, but trailing whitespace MUST be stripped before an entry is added to the history.
+- **FR-008**: The system MUST allow users to access input history using up- and down-arrow keys. When displaying the history via `!history` or navigating with arrow keys, each entry MUST be prefixed with a highlighted bracket, its 1-based index, a colon, and a space (e.g., "**[ 1]:** <line text>").
+- **FR-009**: The system MUST ignore non-printable ASCII characters (values 0-8, 11-12, 14-31, and 127) in interactive input. Carriage return (13) and linefeed (10) are used to terminate input, and horizontal tab (9) is treated as whitespace.
 - **FR-010**: The system MUST ignore empty lines or lines containing only whitespace or ignored non-printable characters, and re-display the prompt.
 - **FR-011**: The system MUST limit nested expressions (delimited by parentheses) to a maximum depth of 255.
 - **FR-012**: The system MUST accept command-line arguments specifying files containing expressions for evaluation.
@@ -188,14 +206,28 @@ A user encounters various error conditions or wishes to terminate the session cl
 
 ### Non-Functional Requirements
 
-- **NFR-001 (Performance)**: Latency MUST be <50ms for <1KB input (benchmark on i7 equivalent).
-- **NFR-002 (Performance)**: Memory usage MUST be <10MB peak.
-- **NFR-003 (Security)**: The runtime MUST operate in a sandboxed environment, disallowing system calls and ensuring pure computation.
+- **NFR-001 (Performance)**: Average evaluation latency MUST be <50ms. This will be benchmarked on a standard GitHub Actions runner using a predefined suite of 1000 representative expressions, none of which exceed 1KB in size.
+- **NFR-002 (Performance)**: Peak memory usage MUST be <10MB. This will be measured on the same benchmark environment and suite as NFR-001.
+- **NFR-012 (Performance)**: Evaluation of expressions that hit an edge case limit (e.g., max nesting depth or max string length) MUST complete in under 1 second and not result in a hang.
+- **NFR-003 (Security)**: The runtime MUST operate in a sandboxed environment. This is achieved by the language grammar itself, which provides no syntax for function calls, file I/O, or any other mechanism that could lead to a system call, ensuring pure computation.
 - **NFR-004 (Security)**: Input handling MUST use fixed buffers of 1023 bytes (as per FR-003) to prevent buffer overflows.
-- **NFR-005 (Usability)**: The CLI MUST use ANSI escape codes for colored output (green for results, red for errors).
-- **NFR-006 (Usability)**: The CLI MUST provide a plain text fallback for terminals not supporting ANSI escapes.
+- **NFR-005 (Usability)**: Colored output will use standard ANSI escape codes: Green (`\x1b[32m`) for results and Red (`\x1b[31m`) for errors. All color changes MUST be reset with `\x1b[0m`.
+- **NFR-006 (Usability)**: The CLI SHOULD attempt to detect if the output stream is a TTY. If it is not a TTY (e.g., output is redirected to a file), ANSI escape codes MUST be disabled automatically.
+- **NFR-018 (Accessibility)**: The CLI MUST be compatible with standard screen readers by using standard stdout/stderr streams and avoiding complex terminal cursor manipulation.
 - **NFR-007 (Reliability)**: The system MUST always reprompt the user after an error.
-- **NFR-008 (Reliability)**: The system MUST perform graceful cleanup of all allocated resources upon termination.
+- **NFR-008 (Reliability)**: The application MUST not have any memory leaks. This MUST be verified by running the test suite under a memory-checking tool like Valgrind.
+- **NFR-019 (Reliability)**: In the event of an unexpected internal error (e.g., memory allocation failure), the system MUST attempt to log the details and print a generic "Internal runtime error occurred" message to the user before terminating with a non-zero exit code.
+- **NFR-020 (Security)**: All third-party dependencies MUST be sourced from official, secure channels, and their integrity MUST be verified via checksums (MD5, SHA-256, etc.) or official digital signatures upon download.
+- **NFR-021 (Security)**: All internal errors MUST be logged to a local, secure file with stringent permissions (e.g., read-only for the owner, no access for others).
+- **NFR-022 (Security)**: The system MUST prevent the output of the most egregious terminal escape sequences (e.g., those that clear the screen, move the cursor arbitrarily, or change terminal modes) when printing user-generated string values to the console. This can be achieved by escaping or filtering known dangerous sequences.
+- **NFR-009 (Version Control)**: Generated build artifacts (e.g., from the ANTLR parser generator or the CMake build process) MUST NOT be committed to the version control repository.
+- **NFR-010 (Resource Limit)**: The evaluator MUST limit the total number of computational steps (operator evaluations) for a single expression to 1,000,000. If this limit is exceeded, the evaluation MUST halt and report a "Computation too complex" error.
+- **NFR-011 (Resource Limit)**: The parser MUST limit the total number of nodes in the Abstract Syntax Tree (AST) for a single expression to 100,000. If this limit is exceeded, parsing MUST halt and report an "Expression too large" error.
+- **NFR-013 (Security)**: The input stream MUST be validated. If any byte outside the 7-bit ASCII range (0-127) is detected, the system must report a 'Non-ASCII input detected' error and terminate.
+- **NFR-014 (Security)**: Should the language ever be extended with features that interact with external systems (e.g., file I/O), a full security review and input sanitization for that feature will be mandatory.
+- **NFR-015 (Security)**: The continuous integration (CI) pipeline MUST include a static analysis security testing (SAST) step.
+- **NFR-016 (Security)**: All production builds MUST be compiled with modern security flags enabled, including stack canaries, ASLR, and DEP/NX.
+- **NFR-017 (Security)**: A formal threat model is not required for the current version due to the limited, sandboxed nature of the language.
 
 ### Key Entities *(include if feature involves data)*
 

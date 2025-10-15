@@ -4,9 +4,9 @@ This guide provides instructions on how to build and run the Expresso evaluator 
 
 ## Prerequisites
 
-- A C++17 compliant compiler (e.g., GCC, Clang, MSVC)
+- A C++17 compliant compiler (e.g., Clang 13.0 or higher, GCC, MSVC)
 - CMake (version 3.10 or higher)
-- ANTLR4 (complete JAR) - [Download here](https://www.antlr.org/download.html)
+- ANTLR4 (version 4.13.2 or higher) complete JAR - [Download here](https://www.antlr.org/download.html)
 
 ## Build Instructions
 
@@ -17,10 +17,10 @@ This guide provides instructions on how to build and run the Expresso evaluator 
     ```
 
 2.  **Generate the ANTLR Parser**:
-    - Download the ANTLR 4 complete JAR and place it in the root of this repository (e.g., `antlr-4.13.1-complete.jar`).
-    - Run the following command from the root of the repository to generate the C++ parser code. Replace `antlr-4.x-complete.jar` with the actual filename of the JAR.
+    - Download the ANTLR 4.13.2 complete JAR (or a higher version) and place it in the root of this repository (e.g., `antlr-4.13.2-complete.jar`).
+    - Run the following command from the root of the repository to generate the C++ parser code. Replace `antlr-4.13.2-complete.jar` with the actual filename of the JAR if you use a different version.
       ```sh
-      java -jar antlr-4.x-complete.jar -Dlanguage=Cpp -o src/parser/generated -visitor -no-listener src/parser/Expresso.g4
+      java -jar antlr-4.13.2-complete.jar -Dlanguage=Cpp -o src/parser/generated -visitor -no-listener src/parser/Expresso.g4
       ```
 
 3.  **Configure with CMake**:
