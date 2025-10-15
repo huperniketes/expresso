@@ -5,6 +5,96 @@
 **Status**: Draft  
 **Input**: User description: "The user is prompted for input with \"expr>\". User input is ASCII-encoded and limited to 1023 bytes. Incomplete expressions and lines ending with a backslash are errors and reported to the user. Extraneous input after a complete expression is erroroneous and reported to the user. Expresso retains a history of the last 10 lines input, accessible by up- and down-arrow. Non-printable characters which don't affect the input line or commands are ignored, except for carriage-return or linefeed which ends input. Empty lines or input with only whitespace- or ignored non-printable characters are ignored, and the user is prompted again for input. Nested expressions (delimited by parentheses) are limited to 255 depth. Expresso accepts command-line arguments for files of expressions, or accepts input from stdin. Expresso accepts a \"-e\" flag for execute or non-interactive mode, and an \"-o\" flag to redirect output to a file. Expresso accepts either \"exit\", \"quit\", or ctrl-D as the command to terminate a session, whereupon it cleans up resources and terminates silently. Expresso terminates with an exit code reflecting the status of the last command executed: 0 for success, 1 for syntax error, 2 for evaluation error, 3 for division-by-zero, and so on."
 
+## System Architecture
+### High-Level Overview
+Expresso is structured as a modular CLI application:
+- **Frontend**: User input loop (custom readline-like for history/navigation).
+- **Parser**: Generated lexer/parser.
+- **Evaluator**: Accepts parser output, evaluating it to compute results.
+- **Output Handler**: Textualize results/errors.
+- **Runtime**: Sandboxed execution ensuring no side effects.
+
+Data Flow:
+1. Read input → Classify (meta-command or expression).
+2. For expressions: Lex → Parse → Evaluate → Textualize → Print.
+3. For meta-commands: Execute internally → Print.
+
+### Components
+| Component | Description |
+|-----------|-------------|
+| Input Manager | Handles prompts, history (last 10 entries), arrow navigation. |
+| Classifier | Checks if input starts with `!` for meta-commands or is treated as an expression. |
+| Parser | Handles Expresso grammar. Rejects assignments/pointers early. |
+| Evaluator | Handles parser output, evaluating it for results and errors; enforces immutability (e.g., + creates new string); handle type promotion (int→float); dynamic string allocation (strdup). |
+| Error Handler | Collects syntax/type/runtime errors; provides position-aware messages. |
+| Help/System Manager | Handles `!help`, `!history`, `!n`, `!clear`. |
+| Output Formatter | Pretty-prints values (e.g., quote strings, hex for chars if needed). Colored CLI  (ANSI escape codes: green for results, red for errors; fallback to plain). |
+
+### Deployment Diagram
+- Single executable: `expresso`.
+- No server; local execution.
+
+## Data Model
+### Value Representation
+All values are immutable
+
+- Type Coercion Rules:
+  - Arithmetic: Promote int to float if mixed.
+  - String + expr: Interpret right-hand expression as a string.
+  - expr + String: Interpret right-hand expression as a number.
+  - Bitwise: Only on ints/chars (treat char as int).
+
+### Error Types
+- SyntaxError: Struct with line, col, msg.
+- TypeError: Position, msg.
+- RuntimeError: Msg only.
+
+## Expresso Language Specification
+### Grammar
+
+The Expresso grammar is defined in grammar-spec.md.
+
+## Functional Specifications
+### Core Loop
+- Prompt: `expr> `.
+- On Enter:
+  - Empty/WS: Reprompt.
+  - !command: Dispatch.
+  - Else: Parse → Eval → Print.
+- Exit: `!exit`, `!quit`, or Ctrl+D.
+
+### Meta-Commands
+| Command | Behavior |
+|---------|----------|
+| !help | Print table of command-line arguments, operators, types, examples (e.g., "1+2*3 → 7"). |
+| !history | List last entries: "#1: input → output". |
+| !n | Re-input history[n]. |
+| !clear | Clear history; print "Session history cleared." |
+
+### Evaluation Rules
+- Support nested depth ≤255 (recursion limit with stack check).
+- String limit: 9,999 characters.
+- Examples:
+  - `1 + 2 * 3` → `7` (int).
+  - `"hello" + " world"` → `"hello world"`.
+  - `1 << 2 ? 4 : 0` → `4`.
+  - Errors: `1 = 2` → SyntaxError.
+
+## Non-Functional Specifications
+
+## User Interface
+### CLI
+- Welcome: "Welcome to Expresso v1.0. Type '!help'; '!quit' to end this session."
+- Output: Result on new line; errors prefixed "Error: ".
+- Truncation: Outputs >1000 chars: "[truncated...] (full in !n)".
+
+## Testing and Quality Assurance
+### Test Cases
+- Unit: Each operator (e.g., add_int_float).
+- Integration: Nested (e.g., `!(1 && 0) ? 1 : 0` → 1).
+- Edge: Divide by zero, max depth (error), invalid literals.
+- Negative: `x=1`, `&ptr`, `++i` → errors.
+
 ## Clarifications
 
 ### Session 2025-10-14
