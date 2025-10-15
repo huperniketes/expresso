@@ -53,7 +53,7 @@ Meta-commands start with `!` and are dispatched internally (FR-003).
 
 | Command | Behavior |
 |---------|----------|
-| `!help` | Prints a table of command-line arguments, operators, types, and examples (FR-006). |
+| `!help` | Prints a table of command-line arguments, operators, types, and examples (e.g., "1+2*3 → 7"). |
 | `!history` | Lists the last 10 input lines (FR-007). |
 | `!n`    | Re-inputs the expression from history at index `n` (FR-008). |
 | `!clear` | Clears the input history and prints "Session history cleared." (FR-009). |
