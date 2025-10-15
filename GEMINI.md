@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2025-10-14
 
 ## Active Technologies
 - ANSI C17 (Core application), C++17 (for ANTLR-generated parser) + ANTLR4 (Parser Generator) (001-expresso-is-an)
+- N/A (In-memory evaluation) (002-the-user-is)
 
 ## Project Structure
 ```
@@ -18,6 +19,7 @@ tests/
 ANSI C17 (Core application), C++17 (for ANTLR-generated parser): Follow standard conventions
 
 ## Recent Changes
+- 002-the-user-is: Added ANSI C17 (Core application), C++17 (for ANTLR-generated parser) + ANTLR4 (Parser Generator)
 - 001-expresso-is-an: Added ANSI C17 (Core application), C++17 (for ANTLR-generated parser) + ANTLR4 (Parser Generator)
 
 <!-- MANUAL ADDITIONS START -->
