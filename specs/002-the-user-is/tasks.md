@@ -19,11 +19,11 @@
 
 **Purpose**: Project initialization and basic structure.
 
-- [ ] T001 Create the project directory structure defined in `plan.md`: `src/cli`, `src/core`, `src/parser/generated`, `tests/integration`, `tests/unit/core`, `tests/unit/parser`, `vendor/antlr4`.
-- [ ] T002 Initialize the CMake build system (`CMakeLists.txt`) to handle the C, C++, and ANTLR components.
-- [ ] T003 [P] Add the ANTLR4 C++ runtime source to `vendor/antlr4`.
-- [ ] T004 [P] Configure GoogleTest framework for C++ tests within the CMake build system.
-- [ ] T005 [P] Create the custom `assert.h` framework for C tests in `tests/unit/core`.
+- [X] T001 Create the project directory structure defined in `plan.md`: `src/cli`, `src/core`, `src/parser/generated`, `tests/integration`, `tests/unit/core`, `tests/unit/parser`, `vendor/antlr4`.
+- [X] T002 Initialize the CMake build system (`CMakeLists.txt`) to handle the C, C++, and ANTLR components.
+- [X] T003 [P] Add the ANTLR4 C++ runtime source to `vendor/antlr4`.
+- [X] T004 [P] Configure GoogleTest framework for C++ tests within the CMake build system.
+- [X] T005 [P] Create the custom `assert.h` framework for C tests in `tests/unit/core`.
 
 ---
 
@@ -31,13 +31,13 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented.
 
-- [ ] T006 Define the Expresso grammar in `src/parser/Expresso.g4` based on `grammar-spec.md`.
-- [ ] T007 Generate the C++ ANTLR parser code into `src/parser/generated/` from `Expresso.g4`.
-- [ ] T008 [P] Implement the C-compatible wrapper for the C++ parser as a static library (`src/parser/parser_wrapper.cpp`, `src/parser/parser_wrapper.h`).
-- [ ] T009 [P] Implement the core `Value` variant type in `src/core/value.h` and `src/core/value.c` as defined in `data-model.md`.
-- [ ] T010 [P] Test [US1,US2,US3]: Write unit tests for the `Value` type in `tests/unit/core/test_value.c`.
-- [ ] T011 Implement the basic evaluator structure in `src/core/evaluator.h` and `src/core/evaluator.c`, including a placeholder evaluation function.
-- [ ] T012 Test [US1,US2,US3]: Write a basic unit test for the placeholder evaluator in `tests/unit/core/test_evaluator.c`.
+- [X] T006 Define the Expresso grammar in `src/parser/Expresso.g4` based on `grammar-spec.md`.
+- [X] T007 Generate the C++ ANTLR parser code into `src/parser/generated/` from `Expresso.g4`.
+- [X] T008 [P] Implement the C-compatible wrapper for the C++ parser as a static library (`src/parser/parser_wrapper.cpp`, `src/parser/parser_wrapper.h`).
+- [X] T009 [P] Implement the core `Value` variant type in `src/core/value.h` and `src/core/value.c` as defined in `data-model.md`.
+- [X] T010 [P] Test [US1,US2,US3]: Write unit tests for the `Value` type in `tests/unit/core/test_value.c`.
+- [X] T011 Implement the basic evaluator structure in `src/core/evaluator.h` and `src/core/evaluator.c`, including a placeholder evaluation function.
+- [X] T012 Test [US1,US2,US3]: Write a basic unit test for the placeholder evaluator in `tests/unit/core/test_evaluator.c`.
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
 
@@ -51,16 +51,16 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T013 [P] [US1] Test: Write an integration test in `tests/integration/test_interactive_session.c` to verify the `expr>` prompt, input handling, and correct output for a simple expression.
-- [ ] T014 [P] [US1] Test: Write a unit test in `tests/unit/core/test_history.c` for the input history buffer (add, recall, clear).
+- [X] T013 [P] [US1] Test: Write an integration test in `tests/integration/test_interactive_session.c` to verify the `expr>` prompt, input handling, and correct output for a simple expression.
+- [X] T014 [P] [US1] Test: Write a unit test in `tests/unit/core/test_history.c` for the input history buffer (add, recall, clear).
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement the `Input History` circular buffer in `src/core/history.h` and `src/core/history.c`.
-- [ ] T016 [US1] Implement the main input loop in `src/cli/main.c` to display the "expr>" prompt (FR-001) and read user input.
-- [ ] T017 [US1] Integrate the history buffer with the input loop to allow up/down arrow history navigation (FR-008).
-- [ ] T018 [US1] Implement the `!history`, `!clear`, and `!n` meta-commands in the input loop (FR-007, FR-009 from cli-interface).
-- [ ] T019 [US1] Connect the input loop to the evaluator: pass valid expressions to the evaluator and print the result.
+- [X] T015 [US1] Implement the `Input History` circular buffer in `src/core/history.h` and `src/core/history.c`.
+- [X] T016 [US1] Implement the main input loop in `src/cli/main.c` to display the "expr>" prompt (FR-001) and read user input.
+- [X] T017 [US1] Integrate the history buffer with the input loop to allow up/down arrow history navigation (FR-008).
+- [X] T018 [US1] Implement the `!history`, `!clear`, and `!n` meta-commands in the input loop (FR-007, FR-009 from cli-interface).
+- [X] T019 [US1] Connect the input loop to the evaluator: pass valid expressions to the evaluator and print the result.
 - [ ] T020 [US1] Implement basic evaluation for simple arithmetic (`+`, `*`) in `src/core/evaluator.c`.
 
 **Checkpoint**: User Story 1 is fully functional and testable independently.
