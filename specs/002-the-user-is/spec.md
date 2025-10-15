@@ -5,6 +5,12 @@
 **Status**: Draft  
 **Input**: User description: "The user is prompted for input with \"expr>\". User input is ASCII-encoded and limited to 1023 bytes. Incomplete expressions and lines ending with a backslash are errors and reported to the user. Extraneous input after a complete expression is erroroneous and reported to the user. Expresso retains a history of the last 10 lines input, accessible by up- and down-arrow. Non-printable characters which don't affect the input line or commands are ignored, except for carriage-return or linefeed which ends input. Empty lines or input with only whitespace- or ignored non-printable characters are ignored, and the user is prompted again for input. Nested expressions (delimited by parentheses) are limited to 255 depth. Expresso accepts command-line arguments for files of expressions, or accepts input from stdin. Expresso accepts a \"-e\" flag for execute or non-interactive mode, and an \"-o\" flag to redirect output to a file. Expresso accepts either \"exit\", \"quit\", or ctrl-D as the command to terminate a session, whereupon it cleans up resources and terminates silently. Expresso terminates with an exit code reflecting the status of the last command executed: 0 for success, 1 for syntax error, 2 for evaluation error, 3 for division-by-zero, and so on."
 
+## Clarifications
+
+### Session 2025-10-14
+- Q: What is the bit-width for integer values? → A: Machine-dependent signed integer, at least 16-bit.
+- Q: What is the fixed buffer size for input mentioned in the security requirements? → A: Use the `1023 bytes` limit already defined in `FR-003` for interactive input.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Interactive Session with History (Priority: P1)
@@ -90,10 +96,21 @@ A user encounters various error conditions or wishes to terminate the session cl
 - **FR-018**: The system MUST terminate silently (without printing messages) upon a clean exit.
 - **FR-019**: The system MUST terminate with an exit code reflecting the status of the last command executed: 0 for success, 1 for syntax error, 2 for evaluation error, 3 for division-by-zero, and so on.
 
+### Non-Functional Requirements
+
+- **NFR-001 (Performance)**: Latency MUST be <50ms for <1KB input (benchmark on i7 equivalent).
+- **NFR-002 (Performance)**: Memory usage MUST be <10MB peak.
+- **NFR-003 (Security)**: The runtime MUST operate in a sandboxed environment, disallowing system calls and ensuring pure computation.
+- **NFR-004 (Security)**: Input handling MUST use fixed buffers of 1023 bytes (as per FR-003) to prevent buffer overflows.
+- **NFR-005 (Usability)**: The CLI MUST use ANSI escape codes for colored output (green for results, red for errors).
+- **NFR-006 (Usability)**: The CLI MUST provide a plain text fallback for terminals not supporting ANSI escapes.
+- **NFR-007 (Reliability)**: The system MUST always reprompt the user after an error.
+- **NFR-008 (Reliability)**: The system MUST perform graceful cleanup of all allocated resources upon termination.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Expression**: A user-provided string representing the code to be evaluated.
-- **Value**: The result of an evaluation. It can be an integer, float, character, or string. It is immutable. Floating-point numbers MUST be handled with standard `double` (64-bit) precision.
+- **Value**: The result of an evaluation. It can be an integer (machine-dependent signed integer, at least 16-bit), float, character, or string. It is immutable. Floating-point numbers MUST be handled with standard `double` (64-bit) precision.
 - **Input History**: A circular buffer storing the last 10 unique input lines.
 
 ## Success Criteria *(mandatory)*
