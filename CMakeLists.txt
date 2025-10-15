@@ -9,11 +9,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Add subdirectories for source code
 add_subdirectory(src/core)
 add_subdirectory(src/parser)
-add_subdirectory(src/cli)
+# Note: src/cli does not contain a CMakeLists.txt; its sources are added directly below.
 # Placeholder for the main executable
 add_executable(expresso src/cli/main.c src/cli/cli_interface.cpp)
 target_link_libraries(expresso expresso_core expresso_parser)
 target_include_directories(expresso PUBLIC src/parser src/cli) # Add src/cli to includes
+
+# Build ANTLR4 C++ runtime (provides antlr4_static/antlr4_shared targets)
+add_subdirectory(vendor/antlr4)
 
 # Add the C integration test executable
 add_executable(test_interactive_session tests/integration/test_interactive_session.c)
@@ -29,11 +32,6 @@ target_link_libraries(test_evaluator expresso_core)
 
 add_executable(test_history tests/unit/core/test_history.c)
 target_link_libraries(test_history expresso_core)
-
-# Add subdirectories for source code
-add_subdirectory(src/core)
-add_subdirectory(src/parser)
-add_subdirectory(src/cli)
 
 # Add GoogleTest as a subdirectory (it's already downloaded as a dependency of ANTLR4 runtime)
 add_subdirectory(vendor/antlr4/runtime/_deps/googletest-src)

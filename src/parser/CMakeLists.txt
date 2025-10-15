@@ -15,5 +15,9 @@ target_include_directories(expresso_parser PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/generated/src/parser
     ${CMAKE_CURRENT_SOURCE_DIR}/generated/src
     ${CMAKE_CURRENT_SOURCE_DIR}/generated
-    SYSTEM ${CMAKE_SOURCE_DIR}/vendor/antlr4/runtime/src # Use ${CMAKE_SOURCE_DIR}
+)
+
+# Mark the ANTLR4 runtime headers as system includes to suppress warnings from third-party code
+target_include_directories(expresso_parser SYSTEM PUBLIC
+    ${CMAKE_SOURCE_DIR}/vendor/antlr4/runtime/src
 )
