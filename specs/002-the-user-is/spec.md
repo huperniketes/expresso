@@ -66,7 +66,7 @@ The Expresso grammar is defined in grammar-spec.md.
 ### Meta-Commands
 | Command | Behavior |
 |---------|----------|
-| !help | Print table of command-line arguments, operators, types, examples (e.g., "1+2*3 → 7"). |
+| !help | Print a help table including: command-line arguments (`-e`, `-o`), available meta-commands, a list of supported operators by precedence, data types (integer, float, string, char), and a usage example like "1+2*3 → 7". |
 | !history | List last entries: "#1: input → output". |
 | !n | Re-input history[n]. |
 | !clear | Clear history; print "Session history cleared." |
