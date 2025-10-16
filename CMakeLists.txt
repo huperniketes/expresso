@@ -9,11 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Add subdirectories for source code
 add_subdirectory(src/core)
 add_subdirectory(src/parser)
-# Note: src/cli does not contain a CMakeLists.txt; its sources are added directly below.
-# Placeholder for the main executable
-add_executable(expresso src/cli/main.c src/cli/cli_interface.cpp)
-target_link_libraries(expresso expresso_core expresso_parser)
-target_include_directories(expresso PUBLIC src/parser src/cli) # Add src/cli to includes
+add_subdirectory(src/cli)
 
 # Build ANTLR4 C++ runtime (provides antlr4_static/antlr4_shared targets)
 add_subdirectory(vendor/antlr4)
