@@ -24,7 +24,8 @@ option(BUILD_TESTS "Build unit and integration tests" ON)
 
 # Add GoogleTest as a subdirectory (it's already downloaded as a dependency of ANTLR4 runtime)
 if(BUILD_TESTS)
-	add_subdirectory(vendor/antlr4/runtime/_deps/googletest-src)
+	# GoogleTest is provided by the ANTLR runtime's FetchContent population.
+	# Do not add_subdirectory here to avoid duplicate target definitions.
 	enable_testing()
 
 	# C integration test (placeholder)
