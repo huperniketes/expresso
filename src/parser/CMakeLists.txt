@@ -1,9 +1,65 @@
+# Optionally auto-generate parser sources from the grammar using ANTLR
+option(AUTO_GENERATE_PARSER "Automatically generate parser sources from Expresso.g4 if missing" ON)
+set(ANTLR_JAR_LOCATION "" CACHE FILEPATH "Path to antlr-4.*-complete.jar used to generate C++ parser sources")
+
+set(GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+set(GENERATED_FILES
+  ${GENERATED_DIR}/ExpressoLexer.cpp
+  ${GENERATED_DIR}/ExpressoLexer.h
+  ${GENERATED_DIR}/ExpressoParser.cpp
+  ${GENERATED_DIR}/ExpressoParser.h
+  ${GENERATED_DIR}/ExpressoVisitor.cpp
+  ${GENERATED_DIR}/ExpressoVisitor.h
+  ${GENERATED_DIR}/ExpressoBaseVisitor.cpp
+  ${GENERATED_DIR}/ExpressoBaseVisitor.h
+  ${GENERATED_DIR}/Expresso.tokens
+)
+
+# If generated parser sources are not present, require the user to either
+# provide an ANTLR jar and enable AUTO_GENERATE_PARSER or run ANTLR manually.
+if(NOT EXISTS "${GENERATED_DIR}/ExpressoParser.cpp")
+  if(NOT (AUTO_GENERATE_PARSER AND ANTLR_JAR_LOCATION))
+    message(FATAL_ERROR "ANTLR generated parser sources not found in ${GENERATED_DIR}.\n"
+      "Either set -DANTLR_JAR_LOCATION=/path/to/antlr-4.x-complete.jar \n"
+      "and -DAUTO_GENERATE_PARSER=ON to generate them at build-time, or run ANTLR manually to produce the files into ${GENERATED_DIR}.")
+  endif()
+endif()
+
+if(AUTO_GENERATE_PARSER)
+  # If generated parser sources are missing, add a custom command to run the ANTLR jar
+  if(NOT EXISTS ${GENERATED_DIR}/ExpressoParser.cpp)
+    if(NOT ANTLR_JAR_LOCATION)
+      message(STATUS "ANTLR_JAR_LOCATION not set; parser generation skipped. To enable auto-generation set -DANTLR_JAR_LOCATION=/path/to/antlr-4.x-complete.jar or set AUTO_GENERATE_PARSER=OFF")
+    else()
+      # Ensure output directory exists at generate time
+      file(MAKE_DIRECTORY ${GENERATED_DIR})
+
+      add_custom_command(
+        OUTPUT ${GENERATED_FILES}
+        COMMAND ${CMAKE_COMMAND} -E echo "Generating ANTLR C++ parser sources into ${GENERATED_DIR}..."
+        COMMAND java -jar "${ANTLR_JAR_LOCATION}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Running ANTLR to generate parser source files"
+        VERBATIM
+      )
+
+      add_custom_target(generate_parser DEPENDS ${GENERATED_FILES})
+    endif()
+  endif()
+endif()
+
 # Build the C++ parser wrapper as a static library
 add_library(expresso_parser STATIC
     parser_wrapper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/generated/src/parser/ExpressoLexer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/generated/src/parser/ExpressoParser.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/generated/ExpressoLexer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/generated/ExpressoParser.cpp
 )
+
+# If we created a generate_parser target, ensure the parser library depends on it
+if(TARGET generate_parser)
+  add_dependencies(expresso_parser generate_parser)
+endif()
 
 # Require C++17 for the parser library
 target_compile_features(expresso_parser PUBLIC cxx_std_17)
@@ -25,8 +81,8 @@ endif()
 # Include directories for generated files (exposed to consumers)
 target_include_directories(expresso_parser PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated/src/parser>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated/src>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
     $<INSTALL_INTERFACE:include>
 )
