@@ -23,3 +23,13 @@ target_include_directories(expresso PUBLIC
 set_target_properties(expresso PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+# Install the CLI executable
+install(TARGETS expresso
+    RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION include/cli
+    FILES_MATCHING PATTERN "*.h"
+)

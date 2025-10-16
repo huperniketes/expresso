@@ -17,3 +17,16 @@ target_include_directories(expresso_core PUBLIC
 # Build as position-independent to be linkable into shared libraries if needed
 set_target_properties(expresso_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+# Install rules for expresso_core
+install(TARGETS expresso_core
+    EXPORT expresso-targets
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+)
+

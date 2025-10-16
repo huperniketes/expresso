@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+include("")
+
+# Set an imported target for consumers
+include("${CMAKE_CURRENT_LIST_DIR}/ExpressoTargets.cmake")
+
+# Provide user-friendly variables
+set(Expresso_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../include")
+

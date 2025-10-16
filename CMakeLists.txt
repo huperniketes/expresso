@@ -55,3 +55,51 @@ if(BUILD_TESTS)
 	target_link_libraries(expresso_cpp_tests PRIVATE expresso_parser GTest::gtest_main)
 	add_test(NAME expresso_cpp_tests COMMAND expresso_cpp_tests)
 endif()
+
+# Installation and export configuration
+include(CMakePackageConfigHelpers)
+
+set(INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
+set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+
+if(TARGET antlr4_static)
+  install(TARGETS antlr4_static EXPORT expresso-targets
+	  ARCHIVE DESTINATION lib
+	  LIBRARY DESTINATION lib
+	  RUNTIME DESTINATION bin)
+elseif(TARGET antlr4_shared)
+  install(TARGETS antlr4_shared EXPORT expresso-targets
+	  ARCHIVE DESTINATION lib
+	  LIBRARY DESTINATION lib
+	  RUNTIME DESTINATION bin)
+endif()
+
+install(EXPORT expresso-targets
+	FILE ExpressoTargets.cmake
+	NAMESPACE Expresso::
+	DESTINATION lib/cmake/Expresso
+)
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ExpressoConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/ExpressoConfig.cmake
+  INSTALL_DESTINATION lib/cmake/Expresso
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/ExpressoConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ExpressoConfig.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/ExpressoConfigVersion.cmake
+	DESTINATION lib/cmake/Expresso)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/
+	DESTINATION include
+	FILES_MATCHING PATTERN "*.h"
+)
+
+## Note: targets are installed and exported by their respective subdirectories
+## (src/core, src/parser, src/cli). Do not repeat install(TARGETS ...) here
+## or CMake will include targets more than once in the export set.
