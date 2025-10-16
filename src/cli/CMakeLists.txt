@@ -12,10 +12,12 @@ target_link_libraries(expresso PRIVATE
     expresso_parser
 )
 
-# Ensure the CLI gets the parser include dirs and its own headers
+## Require C and C++ standards for this target
+target_compile_features(expresso PUBLIC c_std_17 cxx_std_17)
+
+# The parser library already exports its include directories, so only expose local headers
 target_include_directories(expresso PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/parser
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 set_target_properties(expresso PROPERTIES

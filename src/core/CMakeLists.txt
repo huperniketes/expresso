@@ -2,11 +2,18 @@
 add_library(expresso_core STATIC
     value.c
     evaluator.c
-    history.c # Add history.c here
+    history.c
 )
 
-# Include directories for core
+# Require C17 for the core library
+target_compile_features(expresso_core PUBLIC c_std_17)
+
+# Export the include directory for consumers
 target_include_directories(expresso_core PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
 )
+
+# Build as position-independent to be linkable into shared libraries if needed
+set_target_properties(expresso_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
