@@ -80,6 +80,25 @@ install(EXPORT expresso-targets
 	DESTINATION lib/cmake/Expresso
 )
 
+## CPack packaging settings
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_NAME "expresso")
+set(CPACK_PACKAGE_VENDOR "Expresso Project")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Expresso — expression evaluator and CLI")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_GENERATOR "TGZ;ZIP;ProductBuild")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+
+# macOS package settings (ProductBuild)
+set(CPACK_PRODUCTBUILD_IDENTIFIER "com.expresso.app")
+set(CPACK_PRODUCTBUILD_PACKAGE_IDENTIFIER "com.expresso.pkg")
+set(CPACK_PRODUCTBUILD_DISTRIBUTION "")
+
+# Ensure component based install for macOS packages if needed
+set(CPACK_COMPONENTS_ALL runtime)
+
+include(CPack)
+
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ExpressoConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/ExpressoConfig.cmake
   INSTALL_DESTINATION lib/cmake/Expresso
