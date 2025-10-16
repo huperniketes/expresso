@@ -25,6 +25,10 @@ typedef struct {
 } Value;
 
 // --- Value Creation Functions ---
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 Value value_create_integer(long long val);
 Value value_create_float(double val);
 Value value_create_character(char val);
@@ -52,5 +56,9 @@ const char* value_as_error_message(Value val);
 Value value_copy(Value val); // Creates a deep copy for strings
 bool value_equals(Value v1, Value v2);
 void value_print(Value val); // For debugging/output
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // EXPRESO_VALUE_H
