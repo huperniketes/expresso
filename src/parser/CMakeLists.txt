@@ -2,6 +2,9 @@
 option(AUTO_GENERATE_PARSER "Automatically generate parser sources from Expresso.g4 if missing" ON)
 set(ANTLR_JAR_LOCATION "" CACHE FILEPATH "Path to antlr-4.*-complete.jar used to generate C++ parser sources")
 
+# Optionally auto-fetch the ANTLR jar if the user hasn't provided a path
+option(AUTO_FETCH_ANTLR_JAR "Automatically download the matching ANTLR complete jar when ANTLR_JAR_LOCATION is not supplied" OFF)
+
 set(GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 set(GENERATED_FILES
   ${GENERATED_DIR}/ExpressoLexer.cpp
@@ -18,18 +21,83 @@ set(GENERATED_FILES
 # If generated parser sources are not present, require the user to either
 # provide an ANTLR jar and enable AUTO_GENERATE_PARSER or run ANTLR manually.
 if(NOT EXISTS "${GENERATED_DIR}/ExpressoParser.cpp")
-  if(NOT (AUTO_GENERATE_PARSER AND ANTLR_JAR_LOCATION))
+  # Allow either an explicit ANTLR_JAR_LOCATION or AUTO_FETCH_ANTLR_JAR to satisfy
+  # the requirement for generating parser sources at configure time.
+  if(NOT (AUTO_GENERATE_PARSER AND (ANTLR_JAR_LOCATION OR AUTO_FETCH_ANTLR_JAR)))
     message(FATAL_ERROR "ANTLR generated parser sources not found in ${GENERATED_DIR}.\n"
       "Either set -DANTLR_JAR_LOCATION=/path/to/antlr-4.x-complete.jar \n"
-      "and -DAUTO_GENERATE_PARSER=ON to generate them at build-time, or run ANTLR manually to produce the files into ${GENERATED_DIR}.")
+      "and -DAUTO_GENERATE_PARSER=ON to generate them at build-time, or run ANTLR manually to produce the files into ${GENERATED_DIR}.\n"
+      "Alternatively set -DAUTO_FETCH_ANTLR_JAR=ON to have CMake try to download the matching ANTLR jar for you.")
   endif()
 endif()
 
 if(AUTO_GENERATE_PARSER)
   # If generated parser sources are missing, add a custom command to run the ANTLR jar
   if(NOT EXISTS ${GENERATED_DIR}/ExpressoParser.cpp)
+    # If user didn't set ANTLR_JAR_LOCATION but asked to auto-fetch, try to download it
     if(NOT ANTLR_JAR_LOCATION)
-      message(STATUS "ANTLR_JAR_LOCATION not set; parser generation skipped. To enable auto-generation set -DANTLR_JAR_LOCATION=/path/to/antlr-4.x-complete.jar or set AUTO_GENERATE_PARSER=OFF")
+      if(AUTO_FETCH_ANTLR_JAR)
+        set(_antlr_ver_file "${CMAKE_SOURCE_DIR}/vendor/antlr4/VERSION")
+        if(EXISTS ${_antlr_ver_file})
+          file(READ ${_antlr_ver_file} _antlr_ver_raw)
+          string(STRIP "${_antlr_ver_raw}" _antlr_ver)
+          set(_antlr_jar_name "antlr-${_antlr_ver}-complete.jar")
+          set(_antlr_jar_url "https://www.antlr.org/download/${_antlr_jar_name}")
+          set(_antlr_dest_dir "${CMAKE_SOURCE_DIR}/build_tools/antlr")
+          file(MAKE_DIRECTORY "${_antlr_dest_dir}")
+          set(_antlr_dest_path "${_antlr_dest_dir}/${_antlr_jar_name}")
+          if(NOT EXISTS "${_antlr_dest_path}")
+            message(STATUS "AUTO_FETCH_ANTLR_JAR=ON: downloading ${_antlr_jar_name} to ${_antlr_dest_dir}...")
+            file(DOWNLOAD "${_antlr_jar_url}" "${_antlr_dest_path}" SHOW_PROGRESS)
+            if(NOT EXISTS "${_antlr_dest_path}")
+              message(WARNING "Failed to download ANTLR jar from ${_antlr_jar_url}. Parser generation will be skipped unless you provide -DANTLR_JAR_LOCATION=/path/to/${_antlr_jar_name}.")
+            else()
+              set(ANTLR_JAR_LOCATION "${_antlr_dest_path}" CACHE FILEPATH "Path to antlr jar" FORCE)
+              message(STATUS "Downloaded ANTLR jar to ${_antlr_dest_path}")
+              # Run ANTLR at configure time so generated sources exist immediately
+              if(AUTO_GENERATE_PARSER)
+                file(MAKE_DIRECTORY "${GENERATED_DIR}")
+                message(STATUS "Running ANTLR to generate parser sources at configure time...")
+                execute_process(
+                  COMMAND java -jar "${ANTLR_JAR_LOCATION}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
+                  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                  RESULT_VARIABLE _antlr_exec_res
+                  OUTPUT_VARIABLE _antlr_exec_out
+                  ERROR_VARIABLE _antlr_exec_err
+                )
+                if(NOT _antlr_exec_res EQUAL 0)
+                  message(FATAL_ERROR "ANTLR generation failed at configure time: ${_antlr_exec_err}")
+                else()
+                  message(STATUS "ANTLR generation completed at configure time")
+                endif()
+              endif()
+            endif()
+          else()
+            set(ANTLR_JAR_LOCATION "${_antlr_dest_path}" CACHE FILEPATH "Path to antlr jar" FORCE)
+            message(STATUS "Using existing ANTLR jar at ${_antlr_dest_path}")
+            if(AUTO_GENERATE_PARSER)
+              file(MAKE_DIRECTORY "${GENERATED_DIR}")
+              message(STATUS "Running ANTLR to generate parser sources at configure time using existing jar...")
+              execute_process(
+                COMMAND java -jar "${ANTLR_JAR_LOCATION}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                RESULT_VARIABLE _antlr_exec_res
+                OUTPUT_VARIABLE _antlr_exec_out
+                ERROR_VARIABLE _antlr_exec_err
+              )
+              if(NOT _antlr_exec_res EQUAL 0)
+                message(FATAL_ERROR "ANTLR generation failed at configure time: ${_antlr_exec_err}")
+              else()
+                message(STATUS "ANTLR generation completed at configure time")
+              endif()
+            endif()
+          endif()
+        else()
+          message(STATUS "AUTO_FETCH_ANTLR_JAR requested but ${_antlr_ver_file} not found; cannot determine ANTLR version. Set -DANTLR_JAR_LOCATION manually.")
+        endif()
+      else()
+        message(STATUS "ANTLR_JAR_LOCATION not set; parser generation skipped. To enable auto-generation set -DANTLR_JAR_LOCATION=/path/to/antlr-4.x-complete.jar or set AUTO_GENERATE_PARSER=OFF")
+      endif()
     else()
       # Ensure output directory exists at generate time
       file(MAKE_DIRECTORY ${GENERATED_DIR})

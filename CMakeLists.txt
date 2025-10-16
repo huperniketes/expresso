@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.31)
 project(expresso VERSION 0.1.0 LANGUAGES C CXX)
 
+# Option to auto-fetch ANTLR jar when not provided by the user. Default OFF.
+option(AUTO_FETCH_ANTLR_JAR "Automatically download the ANTLR complete jar to build_tools/antlr if ANTLR_JAR_LOCATION is not set" OFF)
+
 # Default language standards (kept for tools that check these variables)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
