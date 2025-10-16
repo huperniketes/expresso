@@ -32,87 +32,77 @@ if(NOT EXISTS "${GENERATED_DIR}/ExpressoParser.cpp")
 endif()
 
 if(AUTO_GENERATE_PARSER)
-  # If generated parser sources are missing, add a custom command to run the ANTLR jar
+  # If generated parser sources are missing, add build-time custom commands to
+  # (1) optionally download the ANTLR jar into build_tools/antlr and
+  # (2) run the ANTLR jar to generate parser sources. Doing this at build
+  # time (rather than configure time) avoids forcing users to have java/curl
+  # present during configure and fits common CI workflows.
   if(NOT EXISTS ${GENERATED_DIR}/ExpressoParser.cpp)
-    # If user didn't set ANTLR_JAR_LOCATION but asked to auto-fetch, try to download it
-    if(NOT ANTLR_JAR_LOCATION)
-      if(AUTO_FETCH_ANTLR_JAR)
-        set(_antlr_ver_file "${CMAKE_SOURCE_DIR}/vendor/antlr4/VERSION")
-        if(EXISTS ${_antlr_ver_file})
-          file(READ ${_antlr_ver_file} _antlr_ver_raw)
-          string(STRIP "${_antlr_ver_raw}" _antlr_ver)
-          set(_antlr_jar_name "antlr-${_antlr_ver}-complete.jar")
-          set(_antlr_jar_url "https://www.antlr.org/download/${_antlr_jar_name}")
-          set(_antlr_dest_dir "${CMAKE_SOURCE_DIR}/build_tools/antlr")
-          file(MAKE_DIRECTORY "${_antlr_dest_dir}")
-          set(_antlr_dest_path "${_antlr_dest_dir}/${_antlr_jar_name}")
-          if(NOT EXISTS "${_antlr_dest_path}")
-            message(STATUS "AUTO_FETCH_ANTLR_JAR=ON: downloading ${_antlr_jar_name} to ${_antlr_dest_dir}...")
-            file(DOWNLOAD "${_antlr_jar_url}" "${_antlr_dest_path}" SHOW_PROGRESS)
-            if(NOT EXISTS "${_antlr_dest_path}")
-              message(WARNING "Failed to download ANTLR jar from ${_antlr_jar_url}. Parser generation will be skipped unless you provide -DANTLR_JAR_LOCATION=/path/to/${_antlr_jar_name}.")
-            else()
-              set(ANTLR_JAR_LOCATION "${_antlr_dest_path}" CACHE FILEPATH "Path to antlr jar" FORCE)
-              message(STATUS "Downloaded ANTLR jar to ${_antlr_dest_path}")
-              # Run ANTLR at configure time so generated sources exist immediately
-              if(AUTO_GENERATE_PARSER)
-                file(MAKE_DIRECTORY "${GENERATED_DIR}")
-                message(STATUS "Running ANTLR to generate parser sources at configure time...")
-                execute_process(
-                  COMMAND java -jar "${ANTLR_JAR_LOCATION}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
-                  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-                  RESULT_VARIABLE _antlr_exec_res
-                  OUTPUT_VARIABLE _antlr_exec_out
-                  ERROR_VARIABLE _antlr_exec_err
-                )
-                if(NOT _antlr_exec_res EQUAL 0)
-                  message(FATAL_ERROR "ANTLR generation failed at configure time: ${_antlr_exec_err}")
-                else()
-                  message(STATUS "ANTLR generation completed at configure time")
-                endif()
-              endif()
-            endif()
-          else()
-            set(ANTLR_JAR_LOCATION "${_antlr_dest_path}" CACHE FILEPATH "Path to antlr jar" FORCE)
-            message(STATUS "Using existing ANTLR jar at ${_antlr_dest_path}")
-            if(AUTO_GENERATE_PARSER)
-              file(MAKE_DIRECTORY "${GENERATED_DIR}")
-              message(STATUS "Running ANTLR to generate parser sources at configure time using existing jar...")
-              execute_process(
-                COMMAND java -jar "${ANTLR_JAR_LOCATION}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-                RESULT_VARIABLE _antlr_exec_res
-                OUTPUT_VARIABLE _antlr_exec_out
-                ERROR_VARIABLE _antlr_exec_err
-              )
-              if(NOT _antlr_exec_res EQUAL 0)
-                message(FATAL_ERROR "ANTLR generation failed at configure time: ${_antlr_exec_err}")
-              else()
-                message(STATUS "ANTLR generation completed at configure time")
-              endif()
-            endif()
-          endif()
+    # Determine a download tool if auto-fetch is requested
+    find_program(CURL_EXECUTABLE curl)
+    find_program(PYTHON3_EXECUTABLE python3)
+
+    set(_downloaded_jar "")
+
+    if(NOT ANTLR_JAR_LOCATION AND AUTO_FETCH_ANTLR_JAR)
+      set(_antlr_ver_file "${CMAKE_SOURCE_DIR}/vendor/antlr4/VERSION")
+      if(EXISTS ${_antlr_ver_file})
+        file(READ ${_antlr_ver_file} _antlr_ver_raw)
+        string(STRIP "${_antlr_ver_raw}" _antlr_ver)
+        set(_antlr_jar_name "antlr-${_antlr_ver}-complete.jar")
+        set(_antlr_jar_url "https://www.antlr.org/download/${_antlr_jar_name}")
+        set(_antlr_dest_dir "${CMAKE_SOURCE_DIR}/build_tools/antlr")
+        file(MAKE_DIRECTORY "${_antlr_dest_dir}")
+        set(_antlr_dest_path "${_antlr_dest_dir}/${_antlr_jar_name}")
+
+        if(CURL_EXECUTABLE)
+          add_custom_command(
+            OUTPUT "${_antlr_dest_path}"
+            COMMAND "${CURL_EXECUTABLE}" -L -o "${_antlr_dest_path}" "${_antlr_jar_url}"
+            COMMENT "Downloading ${_antlr_jar_name} to ${_antlr_dest_dir}"
+            VERBATIM
+          )
+          set(_downloaded_jar "${_antlr_dest_path}")
+        elseif(PYTHON3_EXECUTABLE)
+          # Fallback to python3's urllib if curl isn't available
+          add_custom_command(
+            OUTPUT "${_antlr_dest_path}"
+            COMMAND "${PYTHON3_EXECUTABLE}" -c "import urllib.request,sys; urllib.request.urlretrieve('${_antlr_jar_url}','${_antlr_dest_path}')"
+            COMMENT "Downloading ${_antlr_jar_name} to ${_antlr_dest_dir} using python3"
+            VERBATIM
+          )
+          set(_downloaded_jar "${_antlr_dest_path}")
         else()
-          message(STATUS "AUTO_FETCH_ANTLR_JAR requested but ${_antlr_ver_file} not found; cannot determine ANTLR version. Set -DANTLR_JAR_LOCATION manually.")
+          message(FATAL_ERROR "AUTO_FETCH_ANTLR_JAR requested but neither 'curl' nor 'python3' was found in PATH; cannot download ${_antlr_jar_url}")
         endif()
       else()
-        message(STATUS "ANTLR_JAR_LOCATION not set; parser generation skipped. To enable auto-generation set -DANTLR_JAR_LOCATION=/path/to/antlr-4.x-complete.jar or set AUTO_GENERATE_PARSER=OFF")
+        message(STATUS "AUTO_FETCH_ANTLR_JAR requested but ${_antlr_ver_file} not found; cannot determine ANTLR version. Set -DANTLR_JAR_LOCATION manually.")
       endif()
-    else()
-      # Ensure output directory exists at generate time
+    endif()
+
+    # Determine which jar path to use for generation: user-provided or downloaded output
+    set(_jar_for_generation "${ANTLR_JAR_LOCATION}")
+    if(NOT _jar_for_generation AND _downloaded_jar)
+      set(_jar_for_generation "${_downloaded_jar}")
+    endif()
+
+    if(_jar_for_generation)
+      # Ensure generated dir exists at build time and create a custom command
       file(MAKE_DIRECTORY ${GENERATED_DIR})
 
       add_custom_command(
         OUTPUT ${GENERATED_FILES}
         COMMAND ${CMAKE_COMMAND} -E echo "Generating ANTLR C++ parser sources into ${GENERATED_DIR}..."
-        COMMAND java -jar "${ANTLR_JAR_LOCATION}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
+        COMMAND java -jar "${_jar_for_generation}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4" "${_jar_for_generation}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Running ANTLR to generate parser source files"
         VERBATIM
       )
 
-      add_custom_target(generate_parser DEPENDS ${GENERATED_FILES})
+      add_custom_target(generate_parser DEPENDS ${GENERATED_FILES} "${_jar_for_generation}")
+    else()
+      message(STATUS "ANTLR_JAR_LOCATION not set and auto-fetching didn't produce a jar; parser generation will be skipped. Set -DANTLR_JAR_LOCATION or enable AUTO_FETCH_ANTLR_JAR with curl or python3 available.")
     endif()
   endif()
 endif()
