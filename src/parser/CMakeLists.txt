@@ -3,7 +3,7 @@ option(AUTO_GENERATE_PARSER "Automatically generate parser sources from Expresso
 set(ANTLR_JAR_LOCATION "" CACHE FILEPATH "Path to antlr-4.*-complete.jar used to generate C++ parser sources")
 
 # Optionally auto-fetch the ANTLR jar if the user hasn't provided a path
-option(AUTO_FETCH_ANTLR_JAR "Automatically download the matching ANTLR complete jar when ANTLR_JAR_LOCATION is not supplied" OFF)
+option(AUTO_FETCH_ANTLR_JAR "Automatically download the matching ANTLR complete jar when ANTLR_JAR_LOCATION is not supplied" ON)
 
 set(GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 set(GENERATED_FILES
@@ -21,13 +21,10 @@ set(GENERATED_FILES
 # If generated parser sources are not present, require the user to either
 # provide an ANTLR jar and enable AUTO_GENERATE_PARSER or run ANTLR manually.
 if(NOT EXISTS "${GENERATED_DIR}/ExpressoParser.cpp")
-  # Allow either an explicit ANTLR_JAR_LOCATION or AUTO_FETCH_ANTLR_JAR to satisfy
-  # the requirement for generating parser sources at configure time.
-  if(NOT (AUTO_GENERATE_PARSER AND (ANTLR_JAR_LOCATION OR AUTO_FETCH_ANTLR_JAR)))
-    message(FATAL_ERROR "ANTLR generated parser sources not found in ${GENERATED_DIR}.\n"
-      "Either set -DANTLR_JAR_LOCATION=/path/to/antlr-4.x-complete.jar \n"
-      "and -DAUTO_GENERATE_PARSER=ON to generate them at build-time, or run ANTLR manually to produce the files into ${GENERATED_DIR}.\n"
-      "Alternatively set -DAUTO_FETCH_ANTLR_JAR=ON to have CMake try to download the matching ANTLR jar for you.")
+  if(NOT AUTO_GENERATE_PARSER)
+    message(STATUS "ANTLR generated parser sources not found in ${GENERATED_DIR}. AUTO_GENERATE_PARSER=OFF will skip generation.")
+  else()
+    message(STATUS "ANTLR generated parser sources not found in ${GENERATED_DIR}; they will be generated at build time when the 'generate_parser' target is built.")
   endif()
 endif()
 
