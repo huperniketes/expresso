@@ -78,6 +78,11 @@ The Expresso grammar is defined in grammar-spec.md.
 ### Evaluation Rules
 - Support nested depth ≤255 (recursion limit with stack check).
 - String limit: 9,999 characters.
+- Examples:
+  - `1 + 2 * 3` → `7` (int).
+  - `"hello" + " world"` → `"hello world"`.
+  - `1 << 2 ? 4 : 0` → `4`.
+  - Errors: `1 = 2` → SyntaxError.
 
 #### Bitwise Shift Behavior
 The behavior for invalid shift operations is explicitly defined to avoid undefined behavior:
@@ -90,12 +95,6 @@ The behavior for invalid shift operations is explicitly defined to avoid undefin
 #### Floating-Point Behavior
 - **Special Values**: Any arithmetic operation that results in `NaN` (Not a Number) MUST cause the evaluation to stop immediately and report a runtime error. The language does not support `Infinity` or `NaN` as valid values.
 - **Ternary Operator Exception**: The ternary operator (`? :`) may produce a valid result even if one of its result branches would produce `NaN`, as long as that branch is not taken. For example, `1 > 0 ? 5 : (0.0/0.0)` is valid and results in `5`.
-
-- Examples:
-  - `1 + 2 * 3` → `7` (int).
-  - `"hello" + " world"` → `"hello world"`.
-  - `1 << 2 ? 4 : 0` → `4`.
-  - Errors: `1 = 2` → SyntaxError.
 
 ## Non-Functional Specifications
 
