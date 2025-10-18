@@ -34,7 +34,7 @@ Value cli_evaluate_expression(const char* input_line) {
 
     ExpressoParser::ExpressionContext* tree = expresso_parser_parse(g_parser_ctx, input_line);
     if (tree != nullptr) { // No syntax errors
-        Value eval_result = evaluate_expression_placeholder(tree);
+        Value eval_result = evaluate_expression(tree);
         // Note: The tree needs to be managed. For now, it's owned by the parser_ctx.
         // In a full implementation, the evaluator might take ownership or copy relevant parts.
         return eval_result;

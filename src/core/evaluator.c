@@ -3,7 +3,7 @@
 #include <string.h>
 
 // Placeholder evaluation function
-Value evaluate_expression_placeholder(void* parse_tree_ctx) {
+Value evaluate_expression(void* parse_tree_ctx) {
     // For now, this is still a placeholder.
     // In T020, we will implement actual evaluation using the parse_tree_ctx.
     // For now, just return a generic success or error.

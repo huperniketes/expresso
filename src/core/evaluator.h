@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-Value evaluate_expression_placeholder(void* parse_tree_ctx); // void* to avoid C++ headers in C file
+Value evaluate_expression(void* parse_tree_ctx); // void* to avoid C++ headers in C file
 
 #ifdef __cplusplus
 }
