@@ -5,7 +5,7 @@ set(ANTLR_JAR_LOCATION "" CACHE FILEPATH "Path to antlr-4.*-complete.jar used to
 # Optionally auto-fetch the ANTLR jar if the user hasn't provided a path
 option(AUTO_FETCH_ANTLR_JAR "Automatically download the matching ANTLR complete jar when ANTLR_JAR_LOCATION is not supplied" ON)
 
-set(GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+set(GENERATED_DIR ${CMAKE_BINARY_DIR}/generated)
 set(GENERATED_FILES
   ${GENERATED_DIR}/ExpressoLexer.cpp
   ${GENERATED_DIR}/ExpressoLexer.h
@@ -107,8 +107,8 @@ endif()
 # Build the C++ parser wrapper as a static library
 add_library(expresso_parser STATIC
     parser_wrapper.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/generated/ExpressoLexer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/generated/ExpressoParser.cpp
+  ${GENERATED_DIR}/ExpressoLexer.cpp
+  ${GENERATED_DIR}/ExpressoParser.cpp
 )
 
 # If we created a generate_parser target, ensure the parser library depends on it
@@ -136,9 +136,9 @@ endif()
 # Include directories for generated files (exposed to consumers)
 target_include_directories(expresso_parser PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
+  $<BUILD_INTERFACE:${GENERATED_DIR}>
+    $<BUILD_INTERFACE:${GENERATED_DIR}>
+    $<BUILD_INTERFACE:${GENERATED_DIR}>
     $<INSTALL_INTERFACE:include>
 )
 
