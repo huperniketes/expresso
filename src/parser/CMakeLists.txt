@@ -53,9 +53,11 @@ if(AUTO_GENERATE_PARSER)
         set(_antlr_dest_path "${_antlr_dest_dir}/${_antlr_jar_name}")
 
         if(CURL_EXECUTABLE)
+          # Download jar and then verify SHA256 using the pinned checksum file in vendor/antlr4/JAR_SHA256
           add_custom_command(
             OUTPUT "${_antlr_dest_path}"
-            COMMAND "${CURL_EXECUTABLE}" -L -o "${_antlr_dest_path}" "${_antlr_jar_url}"
+            COMMAND "${CURL_EXECUTABLE}" -L -o "${_antlr_dest_path}.partial" "${_antlr_jar_url}"
+            COMMAND ${CMAKE_COMMAND} -E copy "${_antlr_dest_path}.partial" "${_antlr_dest_path}"
             COMMENT "Downloading ${_antlr_jar_name} to ${_antlr_dest_dir}"
             VERBATIM
           )
@@ -64,7 +66,8 @@ if(AUTO_GENERATE_PARSER)
           # Fallback to python3's urllib if curl isn't available
           add_custom_command(
             OUTPUT "${_antlr_dest_path}"
-            COMMAND "${PYTHON3_EXECUTABLE}" -c "import urllib.request,sys; urllib.request.urlretrieve('${_antlr_jar_url}','${_antlr_dest_path}')"
+            COMMAND "${PYTHON3_EXECUTABLE}" -c "import urllib.request,sys; urllib.request.urlretrieve('${_antlr_jar_url}','${_antlr_dest_path}.partial')"
+            COMMAND ${CMAKE_COMMAND} -E copy "${_antlr_dest_path}.partial" "${_antlr_dest_path}"
             COMMENT "Downloading ${_antlr_jar_name} to ${_antlr_dest_dir} using python3"
             VERBATIM
           )
@@ -87,17 +90,44 @@ if(AUTO_GENERATE_PARSER)
       # Ensure generated dir exists at build time and create a custom command
       file(MAKE_DIRECTORY ${GENERATED_DIR})
 
+      # Add checksum verification: read expected SHA256 from vendor/antlr4/JAR_SHA256
+      set(_jar_checksum_file "${CMAKE_SOURCE_DIR}/vendor/antlr4/JAR_SHA256")
+      if(EXISTS ${_jar_checksum_file})
+        file(READ ${_jar_checksum_file} _expected_sha_raw)
+        string(STRIP "${_expected_sha_raw}" _expected_sha)
+      else()
+        set(_expected_sha "")
+      endif()
+
+      # Build-time command: generate parser sources (depends on downloaded jar)
       add_custom_command(
         OUTPUT ${GENERATED_FILES}
         COMMAND ${CMAKE_COMMAND} -E echo "Generating ANTLR C++ parser sources into ${GENERATED_DIR}..."
-        COMMAND java -jar "${_jar_for_generation}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
+        COMMAND ${CMAKE_COMMAND} -E env JAVA_HOME=$ENV{JAVA_HOME} java -jar "${_jar_for_generation}" -Dlanguage=Cpp -visitor -no-listener -o "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Expresso.g4" "${_jar_for_generation}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Running ANTLR to generate parser source files"
         VERBATIM
       )
 
-      add_custom_target(generate_parser DEPENDS ${GENERATED_FILES} "${_jar_for_generation}")
+      # If we have an expected SHA, add a verification custom target that computes SHA256 and fails if mismatched.
+      if(_expected_sha)
+        # Compute local checksum and compare using a small CMake script invocation
+        add_custom_command(
+          OUTPUT "${_antlr_dest_path}.sha256-verified"
+          COMMAND ${CMAKE_COMMAND} -E echo "Verifying SHA256 of ${_antlr_dest_path}..."
+          COMMAND ${CMAKE_COMMAND} -E cmake_progress_start 0
+          COMMAND ${CMAKE_COMMAND} -DFILEPATH="${_antlr_dest_path}" -DEXPECTED_SHA="${_expected_sha}" -P "${CMAKE_CURRENT_LIST_DIR}/check_sha256.cmake"
+          COMMAND ${CMAKE_COMMAND} -E touch "${_antlr_dest_path}.sha256-verified"
+          DEPENDS "${_downloaded_jar}"
+          COMMENT "Verifying ANTLR jar integrity"
+          VERBATIM
+        )
+        add_custom_target(verify_antlr_jar DEPENDS "${_antlr_dest_path}.sha256-verified")
+        add_custom_target(generate_parser DEPENDS ${GENERATED_FILES} verify_antlr_jar "${_jar_for_generation}")
+      else()
+        add_custom_target(generate_parser DEPENDS ${GENERATED_FILES} "${_jar_for_generation}")
+      endif()
     else()
       message(STATUS "ANTLR_JAR_LOCATION not set and auto-fetching didn't produce a jar; parser generation will be skipped. Set -DANTLR_JAR_LOCATION or enable AUTO_FETCH_ANTLR_JAR with curl or python3 available.")
     endif()
