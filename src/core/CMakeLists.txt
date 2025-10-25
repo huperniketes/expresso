@@ -8,6 +8,9 @@ add_library(expresso_core STATIC
 # Require C17 for the core library
 target_compile_features(expresso_core PUBLIC c_std_17)
 
+# Link against the parser wrapper
+target_link_libraries(expresso_core PUBLIC expresso_parser)
+
 # Export the include directory for consumers
 target_include_directories(expresso_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

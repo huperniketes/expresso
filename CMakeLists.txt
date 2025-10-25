@@ -34,7 +34,7 @@ if(BUILD_TESTS)
 	# C integration test (placeholder)
 	add_executable(test_interactive_session tests/integration/test_interactive_session.c)
 	# This test will eventually link against the CLI executable
-	# target_link_libraries(test_interactive_session PRIVATE expresso)
+	target_link_libraries(test_interactive_session PRIVATE expresso)
 		target_link_libraries(test_interactive_session PRIVATE expresso_parser)
 		add_test(NAME interactive_session COMMAND test_interactive_session)
 

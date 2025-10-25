@@ -22,6 +22,7 @@ target_include_directories(expresso PUBLIC
 
 set_target_properties(expresso PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    ENABLE_EXPORTS ON
 )
 
 # Install the CLI executable
