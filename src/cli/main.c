@@ -9,6 +9,7 @@
 // This version will add to history, but not yet handle arrow keys
 char* read_line(History* h, const char* prompt) {
     printf("%s", prompt);
+	fflush(stdout);
     char* line = NULL;
     size_t len = 0;
     ssize_t read;
