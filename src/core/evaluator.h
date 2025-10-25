@@ -2,14 +2,14 @@
 #define EXPRESO_EVALUATOR_H
 
 #include "value.h"
+#include "parser_wrapper.h"
 
-// Placeholder for the evaluation function
-// This will now take a parse tree node
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-Value evaluate_expression(void* parse_tree_ctx); // void* to avoid C++ headers in C file
+// Evaluate a parsed expression tree
+Value evaluate_expression(ExpressoParseTree* tree);
 
 #ifdef __cplusplus
 }
