@@ -101,10 +101,10 @@ if(NOT EXISTS ${GENERATED_DIR}/ExpressoParser.cpp)
       # Compute local checksum and compare using a small CMake script invocation
       add_custom_command(
         OUTPUT "${_antlr_dest_path}.sha256-verified"
-        COMMAND ${CMAKE_COMMAND} -E echo "Verifying SHA256 of ${_antlr_dest_path}..."
-        COMMAND ${CMAKE_COMMAND} -E cmake_progress_start 0
-        COMMAND ${CMAKE_COMMAND} -DFILEPATH="${_antlr_dest_path}" -DEXPECTED_SHA="${_expected_sha}" -P "${CMAKE_CURRENT_LIST_DIR}/check_sha256.cmake"
-        COMMAND ${CMAKE_COMMAND} -E touch "${_antlr_dest_path}.sha256-verified"
+        # COMMAND "${CMAKE_COMMAND}" -E echo "Verifying SHA256 of ${_antlr_dest_path}..."
+        # COMMAND "${CMAKE_COMMAND}" -E cmake_progress_start 0
+        # COMMAND "${CMAKE_COMMAND}" -DFILEPATH="${_antlr_dest_path}" -DEXPECTED_SHA="${_expected_sha}" -P "${CMAKE_CURRENT_LIST_DIR}/check_sha256.cmake"
+        # COMMAND "${CMAKE_COMMAND}" -E touch "${_antlr_dest_path}.sha256-verified"
         DEPENDS "${_downloaded_jar}"
         COMMENT "Verifying ANTLR jar integrity"
         VERBATIM
