@@ -32,11 +32,10 @@ Value cli_evaluate_expression(const char* input_line) {
         return value_create_error("Empty input provided for evaluation.");
     }
 
-    ExpressoParser::ExpressionContext* tree = expresso_parser_parse(g_parser_ctx, input_line);
-    if (tree != nullptr) { // No syntax errors
+    ExpressoParseTree* tree = expresso_parser_parse(g_parser_ctx, input_line);
+    if (tree != NULL) { // No syntax errors
         Value eval_result = evaluate_expression(tree);
-        // Note: The tree needs to be managed. For now, it's owned by the parser_ctx.
-        // In a full implementation, the evaluator might take ownership or copy relevant parts.
+        expresso_tree_destroy(tree);
         return eval_result;
     } else {
         // Error already printed by parser_wrapper
