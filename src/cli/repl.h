@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-void repl_init();
+const char* repl_init();
 
 // Clean up the CLI interface
 void repl_shutdown();

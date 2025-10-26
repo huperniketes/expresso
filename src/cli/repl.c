@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static	History				*g_repl_history = NULL;
+
 // Placeholder for a readline-like function
 // This version will add to history, but not yet handle arrow keys
 char* read_line(History* const h, const char* prompt) {
@@ -36,18 +38,31 @@ char* read_line(History* const h, const char* prompt) {
 // Global parser context (managed by C++ wrapper)
 static ExpressoParserContext* g_parser_ctx = NULL;
 
-void repl_init() {
+const char* repl_init() {
+
+    g_repl_history = history_create(10); // Create history with capacity 10 (FR-007)
+    if (!g_repl_history) {
+        return	"Could not create history buffer.";
+    }
+
     g_parser_ctx = expresso_parser_create();
     if (!g_parser_ctx) {
-        fprintf(stderr, "Fatal Error: Could not initialize parser context.\n");
-        exit(EXIT_FAILURE);
+        return	"Could not initialize parser context.";
     }
+
+	return NULL;
 }
 
 void repl_shutdown() {
+
     if (g_parser_ctx) {
         expresso_parser_destroy(g_parser_ctx);
         g_parser_ctx = NULL;
+    }
+
+    if (g_repl_history) {
+        history_destroy(g_repl_history);
+        g_repl_history = NULL;
     }
 }
 
@@ -70,7 +85,7 @@ Value repl_evaluate_expression(const char* input_line) {
     }
 }
 
-int repl_read_eval_print(History *const h) {
+int read_eval_print(History *const h) {
 
     char* input_line = read_line(h, "expr> ");
     int   continue_repl = input_line != NULL;
@@ -108,4 +123,8 @@ int repl_read_eval_print(History *const h) {
         free(input_line);
     }
     return continue_repl;
+}
+
+int repl_read_eval_print() {
+	return	read_eval_print(g_repl_history);
 }
