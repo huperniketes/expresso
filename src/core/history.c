@@ -34,7 +34,7 @@ History* history_create(size_t capacity) {
     return h;
 }
 
-void history_destroy(History* h) {
+void history_destroy(const History* h) {
     if (!h) return;
 
     for (size_t i = 0; i < h->capacity; ++i) {
@@ -44,7 +44,7 @@ void history_destroy(History* h) {
     free(h);
 }
 
-void history_add(History* h, const char* entry) {
+void history_add(History* const h, const char* entry) {
     if (!h || !entry) return;
 
     // Strip trailing whitespace as per NFR-007
@@ -87,18 +87,18 @@ void history_add(History* h, const char* entry) {
     h->tail = (h->tail + 1) % h->capacity;
 }
 
-const char* history_get(History* h, size_t index) {
+const char* history_get(const History* h, size_t index) {
     if (!h || index >= h->size) {
         return NULL;
     }
     return h->entries[(h->head + index) % h->capacity];
 }
 
-size_t history_size(History* h) {
+size_t history_size(const History* h) {
     return h->size;
 }
 
-void history_clear(History* h) {
+void history_clear(History* const h) {
     if (!h) return;
 
     for (size_t i = 0; i < h->capacity; ++i) {

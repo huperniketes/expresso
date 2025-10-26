@@ -15,19 +15,19 @@ typedef struct {
 History* history_create(size_t capacity);
 
 // Destroy the history buffer and free all allocated memory
-void history_destroy(History* h);
+void history_destroy(const History* h);
 
 // Add an entry to the history buffer
-void history_add(History* h, const char* entry);
+void history_add(History* const h, const char* entry);
 
 // Get an entry from the history buffer by its relative index (0 is oldest, size-1 is newest)
 // Returns NULL if index is out of bounds or history is empty
-const char* history_get(History* h, size_t index);
+const char* history_get(const History* h, size_t index);
 
 // Get the current number of entries in the history
-size_t history_size(History* h);
+size_t history_size(const History* h);
 
 // Clear all entries from the history
-void history_clear(History* h);
+void history_clear(History* const h);
 
 #endif // EXPRESO_HISTORY_H
