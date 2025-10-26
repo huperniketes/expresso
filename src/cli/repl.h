@@ -17,6 +17,8 @@ void repl_shutdown();
 // Returns the result as a Value
 Value repl_evaluate_expression(const char* input_line);
 
+int repl_read_eval_print();
+
 #ifdef __cplusplus
 }
 #endif
