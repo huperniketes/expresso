@@ -11,7 +11,7 @@ static	History				*g_repl_history = NULL;
 
 // Placeholder for a readline-like function
 // This version will add to history, but not yet handle arrow keys
-char* read_line(History* const h, const char* prompt) {
+char* read_line(const char* prompt) {
     printf("%s", prompt);
 	fflush(stdout);
     char* line = NULL;
@@ -25,11 +25,6 @@ char* read_line(History* const h, const char* prompt) {
     // Remove trailing newline
     if (read > 0 && line[read - 1] == '\n') {
         line[read - 1] = '\0';
-    }
-
-    // Add to history
-    if (line && strlen(line) > 0) {
-        history_add(h, line);
     }
 
     return line;
@@ -87,10 +82,15 @@ Value repl_evaluate_expression(const char* input_line) {
 
 int read_eval_print(History *const h) {
 
-    char* input_line = read_line(h, "expr> ");
+    char* input_line = read_line("expr> ");
     int   continue_repl = input_line != NULL;
 
     if (continue_repl) {
+
+        // Add to history
+        if (strlen(input_line) > 0) {
+            history_add(h, input_line);
+        }
         if (strcmp(input_line, "!quit") == 0 || strcmp(input_line, "!exit") == 0) {
             continue_repl = 0;
         } else if (strcmp(input_line, "!history") == 0) {
