@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "history.h" // Include history.h
-#include "cli_interface.h" // Include cli_interface.h
+#include "repl.h"
 // Remove parser_wrapper.h and evaluator.h
 
 // Placeholder for a readline-like function
@@ -32,12 +32,12 @@ char* read_line(History* h, const char* prompt) {
 }
 
 int main(int argc, char* argv[]) {
-    cli_init(); // Initialize CLI interface
+    repl_init(); // Initialize CLI interface
 
     History* h = history_create(10); // Create history with capacity 10 (FR-007)
     if (!h) {
         fprintf(stderr, "Fatal Error: Could not create history buffer.\n");
-        cli_shutdown(); // Ensure cleanup
+        repl_shutdown(); // Ensure cleanup
         return EXIT_FAILURE;
     }
 
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
                 fprintf(stderr, "Error: history index out of bounds\n");
             }
         } else {
-            Value eval_result = cli_evaluate_expression(input_line);
+            Value eval_result = repl_evaluate_expression(input_line);
             value_print(eval_result);
             printf("\n"); // Newline after result
             value_destroy(eval_result);
@@ -78,7 +78,6 @@ int main(int argc, char* argv[]) {
     }
 
     history_destroy(h); // Clean up history
-    cli_shutdown(); // Clean up CLI interface
+    repl_shutdown(); // Clean up CLI interface
     return 0;
 }
-

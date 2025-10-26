@@ -3,7 +3,7 @@
 # Create the CLI executable from the C main and the C++ interface wrapper
 add_executable(expresso
     main.c
-    cli_interface.c
+    repl.c
 )
 
 # Link against project libraries

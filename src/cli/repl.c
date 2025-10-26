@@ -1,4 +1,4 @@
-#include "cli_interface.h"
+#include "repl.h"
 #include "parser_wrapper.h" // For C++ parser interface
 #include "evaluator.h"      // For evaluator
 #include "value.h"          // For Value type
@@ -9,7 +9,7 @@
 // Global parser context (managed by C++ wrapper)
 static ExpressoParserContext* g_parser_ctx = NULL;
 
-void cli_init() {
+void repl_init() {
     g_parser_ctx = expresso_parser_create();
     if (!g_parser_ctx) {
         fprintf(stderr, "Fatal Error: Could not initialize parser context.\n");
@@ -17,14 +17,14 @@ void cli_init() {
     }
 }
 
-void cli_shutdown() {
+void repl_shutdown() {
     if (g_parser_ctx) {
         expresso_parser_destroy(g_parser_ctx);
         g_parser_ctx = NULL;
     }
 }
 
-Value cli_evaluate_expression(const char* input_line) {
+Value repl_evaluate_expression(const char* input_line) {
     if (!g_parser_ctx) {
         return value_create_error("CLI interface not initialized.");
     }

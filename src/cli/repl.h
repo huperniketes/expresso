@@ -8,14 +8,14 @@
 extern "C" {
 #endif
 
-void cli_init();
+void repl_init();
 
 // Clean up the CLI interface
-void cli_shutdown();
+void repl_shutdown();
 
 // Parse and evaluate an expression string
 // Returns the result as a Value
-Value cli_evaluate_expression(const char* input_line);
+Value repl_evaluate_expression(const char* input_line);
 
 #ifdef __cplusplus
 }
