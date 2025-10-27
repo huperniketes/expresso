@@ -1,10 +1,12 @@
 #include "parser_wrapper.h"
 #include "ExpressoLexer.h"
 #include "ExpressoParser.h"
+#include "ExpressoBaseVisitor.h"
 #include "antlr4-runtime.h"
 #include <iostream>
 #include <string>
 
+// Define the opaque context structure
 struct ExpressoParserContext {
     antlr4::ANTLRInputStream input;
     ExpressoLexer lexer;
@@ -12,12 +14,10 @@ struct ExpressoParserContext {
     ExpressoParser parser;
 
     ExpressoParserContext() :
-        input(""),
-        lexer(&input),
-        tokens(&lexer),
-        parser(&tokens) {}
+        input(""), lexer(&input), tokens(&lexer), parser(&tokens) {}
 };
 
+// Define the parse tree wrapper structure
 struct ExpressoParseTree {
     antlr4::tree::ParseTree* node;
     std::string text;
@@ -78,16 +78,69 @@ ExpressoParseTree* expresso_tree_get_child(ExpressoParseTree* tree, int index) {
     return new ExpressoParseTree(tree->node->children[index]);
 }
 
-void expresso_tree_destroy(ExpressoParseTree* tree) {
-    delete tree;
-}
-
 int expresso_tree_get_terminal_type(ExpressoParseTree* tree) {
     if (!tree || !tree->node) return -1;
     if (auto* term_node = dynamic_cast<antlr4::tree::TerminalNode*>(tree->node)) {
         return term_node->getSymbol()->getType();
     }
     return -1;
+}
+
+void expresso_tree_destroy(ExpressoParseTree* tree) {
+    delete tree;
+}
+
+// Visitor implementation
+class CxxVisitor : public ExpressoBaseVisitor {
+public:
+    CxxVisitor(CExpressoVisitor* visitor) : visitor_(visitor) {}
+
+    std::any visitExpression(ExpressoParser::ExpressionContext *ctx) override {
+        if (visitor_->visit_expression) {
+            ExpressoParseTree tree(ctx);
+            return visitor_->visit_expression(visitor_, &tree);
+        }
+        return visitChildren(ctx);
+    }
+
+    std::any visitAdditiveExpression(ExpressoParser::AdditiveExpressionContext *ctx) override {
+        if (visitor_->visit_additive_expression) {
+            ExpressoParseTree tree(ctx);
+            return visitor_->visit_additive_expression(visitor_, &tree);
+        }
+        return visitChildren(ctx);
+    }
+
+    std::any visitMultiplicativeExpression(ExpressoParser::MultiplicativeExpressionContext *ctx) override {
+        if (visitor_->visit_multiplicative_expression) {
+            ExpressoParseTree tree(ctx);
+            return visitor_->visit_multiplicative_expression(visitor_, &tree);
+        }
+        return visitChildren(ctx);
+    }
+
+    std::any visitLiteral(ExpressoParser::LiteralContext *ctx) override {
+        if (visitor_->visit_literal) {
+            ExpressoParseTree tree(ctx);
+            return visitor_->visit_literal(visitor_, &tree);
+        }
+        return visitChildren(ctx);
+    }
+
+private:
+    CExpressoVisitor* visitor_;
+};
+
+Value expresso_tree_accept(ExpressoParseTree* tree, CExpressoVisitor* visitor) {
+    if (!tree || !tree->node || !visitor) {
+        return value_create_error("Invalid arguments to accept");
+    }
+    CxxVisitor c_visitor(visitor);
+    std::any result = c_visitor.visit(tree->node);
+    if (result.has_value() && result.type() == typeid(Value)) {
+        return std::any_cast<Value>(result);
+    }
+    return value_create_error("Visitor did not return a Value");
 }
 
 void expresso_parser_destroy(ExpressoParserContext* ctx) {

@@ -1,6 +1,8 @@
 #ifndef EXPRESO_PARSER_WRAPPER_H
 #define EXPRESO_PARSER_WRAPPER_H
 
+#include "value.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,6 +34,20 @@ ExpressoParseTree* expresso_tree_get_child(ExpressoParseTree* tree, int index);
 void expresso_tree_destroy(ExpressoParseTree* tree);
 
 int expresso_tree_get_terminal_type(ExpressoParseTree* tree);
+
+typedef struct CExpressoVisitor CExpressoVisitor;
+
+typedef Value (*CVisitFunction)(CExpressoVisitor* visitor, ExpressoParseTree* tree);
+
+struct CExpressoVisitor {
+    void* user_data;
+    CVisitFunction visit_expression;
+    CVisitFunction visit_additive_expression;
+    CVisitFunction visit_multiplicative_expression;
+    CVisitFunction visit_literal;
+};
+
+Value expresso_tree_accept(ExpressoParseTree* tree, CExpressoVisitor* visitor);
 
 // Function to destroy the parser instance
 void expresso_parser_destroy(ExpressoParserContext* ctx);
