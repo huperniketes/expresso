@@ -57,106 +57,73 @@ Value visit_literal(CExpressoVisitor* visitor, ExpressoParseTree* tree) {
 }
 
 Value visit_additive_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree) {
-    if (expresso_tree_get_child_count(tree) == 1) {
-        ExpressoParseTree* child = expresso_tree_get_child(tree, 0);
-        Value result = expresso_tree_accept(child, visitor);
-        expresso_tree_destroy(child);
-        return result;
+    int child_count = expresso_tree_get_child_count(tree);
+    if (child_count == 1) {
+        return expresso_tree_accept(expresso_tree_get_child(tree, 0), visitor);
     }
 
-    ExpressoParseTree* left_child = expresso_tree_get_child(tree, 0);
-    ExpressoParseTree* op_child = expresso_tree_get_child(tree, 1);
-    int op_type = expresso_tree_get_terminal_type(op_child);
-    ExpressoParseTree* right_child = expresso_tree_get_child(tree, 2);
+    Value result = expresso_tree_accept(expresso_tree_get_child(tree, 0), visitor);
 
-    Value left_val = expresso_tree_accept(left_child, visitor);
-    Value right_val = expresso_tree_accept(right_child, visitor);
+    for (int i = 1; i < child_count; i += 2) {
+        int op_type = expresso_tree_get_terminal_type(expresso_tree_get_child(tree, i));
+        Value right = expresso_tree_accept(expresso_tree_get_child(tree, i + 1), visitor);
 
-    if (value_is_error(left_val)) return left_val;
-    if (value_is_error(right_val)) return right_val;
-
-    if (!value_is_integer(left_val) || !value_is_integer(right_val)) {
-        return value_create_error("Type error: operands must be integers.");
+        if (value_is_integer(result) && value_is_integer(right)) {
+            int l = value_as_integer(result);
+            int r = value_as_integer(right);
+            value_destroy(result);
+            if (op_type == OP_ADD) {
+                result = value_create_integer(l + r);
+            } else if (op_type == OP_SUB) {
+                result = value_create_integer(l - r);
+            }
+        } else {
+            value_destroy(result);
+            result = value_create_error("Type error.");
+        }
+        value_destroy(right);
     }
-
-    int left_int = value_as_integer(left_val);
-    int right_int = value_as_integer(right_val);
-    Value result;
-
-    switch (op_type) {
-        case OP_ADD:
-            result = value_create_integer(left_int + right_int);
-            break;
-        case OP_SUB:
-            result = value_create_integer(left_int - right_int);
-            break;
-        default:
-            result = value_create_error("Unknown operator.");
-    }
-
-    value_destroy(left_val);
-    value_destroy(right_val);
-    expresso_tree_destroy(left_child);
-    expresso_tree_destroy(op_child);
-    expresso_tree_destroy(right_child);
 
     return result;
 }
 
 Value visit_multiplicative_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree) {
-    if (expresso_tree_get_child_count(tree) == 1) {
-        ExpressoParseTree* child = expresso_tree_get_child(tree, 0);
-        Value result = expresso_tree_accept(child, visitor);
-        expresso_tree_destroy(child);
-        return result;
+    int child_count = expresso_tree_get_child_count(tree);
+    if (child_count == 1) {
+        return expresso_tree_accept(expresso_tree_get_child(tree, 0), visitor);
     }
 
-    ExpressoParseTree* left_child = expresso_tree_get_child(tree, 0);
-    ExpressoParseTree* op_child = expresso_tree_get_child(tree, 1);
-    int op_type = expresso_tree_get_terminal_type(op_child);
-    ExpressoParseTree* right_child = expresso_tree_get_child(tree, 2);
+    Value result = expresso_tree_accept(expresso_tree_get_child(tree, 0), visitor);
 
-    Value left_val = expresso_tree_accept(left_child, visitor);
-    Value right_val = expresso_tree_accept(right_child, visitor);
+    for (int i = 1; i < child_count; i += 2) {
+        int op_type = expresso_tree_get_terminal_type(expresso_tree_get_child(tree, i));
+        Value right = expresso_tree_accept(expresso_tree_get_child(tree, i + 1), visitor);
 
-    if (value_is_error(left_val)) return left_val;
-    if (value_is_error(right_val)) return right_val;
-
-    if (!value_is_integer(left_val) || !value_is_integer(right_val)) {
-        return value_create_error("Type error: operands must be integers.");
-    }
-
-    int left_int = value_as_integer(left_val);
-    int right_int = value_as_integer(right_val);
-    Value result;
-
-    switch (op_type) {
-        case OP_MUL:
-            result = value_create_integer(left_int * right_int);
-            break;
-        case OP_DIV:
-            if (right_int == 0) {
-                result = value_create_error("Division by zero.");
-            } else {
-                result = value_create_integer(left_int / right_int);
+        if (value_is_integer(result) && value_is_integer(right)) {
+            int l = value_as_integer(result);
+            int r = value_as_integer(right);
+            value_destroy(result);
+            if (op_type == OP_MUL) {
+                result = value_create_integer(l * r);
+            } else if (op_type == OP_DIV) {
+                if (r == 0) {
+                    result = value_create_error("Division by zero.");
+                } else {
+                    result = value_create_integer(l / r);
+                }
+            } else if (op_type == OP_MOD) {
+                if (r == 0) {
+                    result = value_create_error("Division by zero.");
+                } else {
+                    result = value_create_integer(l % r);
+                }
             }
-            break;
-        case OP_MOD:
-            if (right_int == 0) {
-                result = value_create_error("Division by zero.");
-            } else {
-                result = value_create_integer(left_int % right_int);
-            }
-            break;
-        default:
-            result = value_create_error("Unknown operator.");
+        } else {
+            value_destroy(result);
+            result = value_create_error("Type error.");
+        }
+        value_destroy(right);
     }
-
-    value_destroy(left_val);
-    value_destroy(right_val);
-    expresso_tree_destroy(left_child);
-    expresso_tree_destroy(op_child);
-    expresso_tree_destroy(right_child);
 
     return result;
 }
