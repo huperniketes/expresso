@@ -19,11 +19,19 @@ ExpressoParseTree* expresso_parser_parse(ExpressoParserContext* ctx, const char*
 // Get the raw text of a parse tree node
 const char* expresso_tree_get_text(ExpressoParseTree* tree);
 
-// Get the type of a parse tree node (returns enum value defined below)
+// Get the type of a parse tree node (returns rule index or -1 for terminal)
 int expresso_tree_get_type(ExpressoParseTree* tree);
+
+// Get the number of children of a parse tree node
+int expresso_tree_get_child_count(ExpressoParseTree* tree);
+
+// Get a child of a parse tree node by index
+ExpressoParseTree* expresso_tree_get_child(ExpressoParseTree* tree, int index);
 
 // Free a parse tree
 void expresso_tree_destroy(ExpressoParseTree* tree);
+
+int expresso_tree_get_terminal_type(ExpressoParseTree* tree);
 
 // Function to destroy the parser instance
 void expresso_parser_destroy(ExpressoParserContext* ctx);

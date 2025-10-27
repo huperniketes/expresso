@@ -4,33 +4,106 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define OP_ADD 15
+#define OP_SUB 16
+#define OP_MUL 17
+#define OP_DIV 18
+#define OP_MOD 19
+
 Value evaluate_expression(ExpressoParseTree* tree) {
     if (tree == NULL) {
         return value_create_error("Cannot evaluate NULL parse tree.");
     }
 
-    const char* text = expresso_tree_get_text(tree);
-    if (!text) {
-        return value_create_error("Cannot get expression text.");
-    }
+    int child_count = expresso_tree_get_child_count(tree);
 
-    // For now, handle only the simplest cases to make tests pass
-    if (strcmp(text, "1+1") == 0) {
-        return value_create_integer(2);
-    } else if (text[0] == '"' && text[strlen(text)-1] == '"') {
-        // String literal - remove the quotes (copy to avoid modifying text)
-        size_t len = strlen(text);
-        char* str = malloc(len - 1); // -2 for quotes, +1 for null
-        if (!str) {
-            return value_create_error("Out of memory");
+    if (child_count == 1) { // Literal or parenthesized expression
+        const char* text = expresso_tree_get_text(tree);
+        if (text[0] == '(' && text[strlen(text) - 1] == ')') {
+            ExpressoParseTree* child = expresso_tree_get_child(tree, 0);
+            Value result = evaluate_expression(child);
+            expresso_tree_destroy(child);
+            return result;
+        } else { // Literal
+            if (text[0] == '"') {
+                size_t len = strlen(text);
+                char* str = malloc(len - 1);
+                strncpy(str, text + 1, len - 2);
+                str[len - 2] = '\0';
+                Value val = value_create_string(str);
+                free(str);
+                return val;
+            } else {
+                return value_create_integer(atoi(text));
+            }
         }
-        strncpy(str, text + 1, len - 2);
-        str[len - 2] = '\0';
-        Value val = value_create_string(str);
-        free(str);
-        return val;
-    } else if (strcmp(text, "x") == 0) {
-        return value_create_error("Cannot evaluate unknown variable 'x'");
+    } else if (child_count == 3) { // Binary operation
+        ExpressoParseTree* left_child = expresso_tree_get_child(tree, 0);
+        ExpressoParseTree* op_child = expresso_tree_get_child(tree, 1);
+        int op_type = expresso_tree_get_terminal_type(op_child);
+        ExpressoParseTree* right_child = expresso_tree_get_child(tree, 2);
+
+        Value left_val = evaluate_expression(left_child);
+        Value right_val = evaluate_expression(right_child);
+
+        if (value_is_error(left_val)) {
+            expresso_tree_destroy(left_child);
+            expresso_tree_destroy(op_child);
+            expresso_tree_destroy(right_child);
+            value_destroy(right_val);
+            return left_val;
+        }
+        if (value_is_error(right_val)) {
+            expresso_tree_destroy(left_child);
+            expresso_tree_destroy(op_child);
+            expresso_tree_destroy(right_child);
+            value_destroy(left_val);
+            return right_val;
+        }
+
+        if (!value_is_integer(left_val) || !value_is_integer(right_val)) {
+            return value_create_error("Type error: operands must be integers.");
+        }
+
+        int left_int = value_as_integer(left_val);
+        int right_int = value_as_integer(right_val);
+        Value result;
+
+        switch (op_type) {
+            case OP_ADD:
+                result = value_create_integer(left_int + right_int);
+                break;
+            case OP_SUB:
+                result = value_create_integer(left_int - right_int);
+                break;
+            case OP_MUL:
+                result = value_create_integer(left_int * right_int);
+                break;
+            case OP_DIV:
+                if (right_int == 0) {
+                    result = value_create_error("Division by zero.");
+                } else {
+                    result = value_create_integer(left_int / right_int);
+                }
+                break;
+            case OP_MOD:
+                if (right_int == 0) {
+                    result = value_create_error("Division by zero.");
+                } else {
+                    result = value_create_integer(left_int % right_int);
+                }
+                break;
+            default:
+                result = value_create_error("Unknown operator.");
+        }
+
+        value_destroy(left_val);
+        value_destroy(right_val);
+        expresso_tree_destroy(left_child);
+        expresso_tree_destroy(op_child);
+        expresso_tree_destroy(right_child);
+
+        return result;
     }
 
     return value_create_error("Cannot evaluate expression");
