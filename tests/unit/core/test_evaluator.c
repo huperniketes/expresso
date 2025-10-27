@@ -110,11 +110,39 @@ void test_evaluate_unknown_expression() {
     expresso_parser_destroy(parser_ctx);
 }
 
+void test_evaluate_sequence_of_expressions() {
+    ExpressoParserContext* parser_ctx = expresso_parser_create();
+    ASSERT_TRUE(parser_ctx != NULL, "Failed to create parser context");
+
+    // Test addition sequence
+    const char* addition_expr = "3 + 5 + 7 + 22";
+    ExpressoParseTree* tree = expresso_parser_parse(parser_ctx, addition_expr);
+    ASSERT_TRUE(tree != NULL, "Failed to parse addition sequence");
+    Value result = evaluate_expression(tree);
+    ASSERT_TRUE(value_is_integer(result), "Addition sequence result should be integer");
+    ASSERT_EQ(37, value_as_integer(result), "Addition sequence result is incorrect");
+    value_destroy(result);
+    expresso_tree_destroy(tree);
+
+    // Test multiplication sequence
+    const char* mult_expr = "2 * 4 * 7";
+    tree = expresso_parser_parse(parser_ctx, mult_expr);
+    ASSERT_TRUE(tree != NULL, "Failed to parse multiplication sequence");
+    result = evaluate_expression(tree);
+    ASSERT_TRUE(value_is_integer(result), "Multiplication sequence result should be integer");
+    ASSERT_EQ(56, value_as_integer(result), "Multiplication sequence result is incorrect");
+    value_destroy(result);
+    expresso_tree_destroy(tree);
+
+    expresso_parser_destroy(parser_ctx);
+}
+
 int main() {
     printf("Running Evaluator unit tests...\n");
     test_evaluate_arithmetic_operations();
     test_evaluate_hello_string();
     test_evaluate_unknown_expression();
+    test_evaluate_sequence_of_expressions();
     printf("All Evaluator unit tests passed!\n");
     return 0;
 }
