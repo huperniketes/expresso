@@ -1,5 +1,5 @@
-#ifndef EXPRESO_EVALUATOR_H
-#define EXPRESO_EVALUATOR_H
+#ifndef EXPRESSO_EVALUATOR_H
+#define EXPRESSO_EVALUATOR_H
 
 #include "value.h"
 #include "parser_wrapper.h"
@@ -15,4 +15,4 @@ Value evaluate_expression(ExpressoParseTree* tree);
 }
 #endif
 
-#endif // EXPRESO_EVALUATOR_H
+#endif // EXPRESSO_EVALUATOR_H

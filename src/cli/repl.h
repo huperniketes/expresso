@@ -1,5 +1,5 @@
-#ifndef EXPRESO_CLI_INTERFACE_H
-#define EXPRESO_CLI_INTERFACE_H
+#ifndef EXPRESSO_CLI_INTERFACE_H
+#define EXPRESSO_CLI_INTERFACE_H
 
 #include "value.h" // For Value type
 
@@ -23,4 +23,4 @@ int repl_read_eval_print();
 }
 #endif
 
-#endif // EXPRESO_CLI_INTERFACE_H
+#endif // EXPRESSO_CLI_INTERFACE_H

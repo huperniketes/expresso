@@ -1,5 +1,5 @@
-#ifndef EXPRESO_HISTORY_H
-#define EXPRESO_HISTORY_H
+#ifndef EXPRESSO_HISTORY_H
+#define EXPRESSO_HISTORY_H
 
 #include <stddef.h> // For size_t
 
@@ -30,4 +30,4 @@ size_t history_size(const History* h);
 // Clear all entries from the history
 void history_clear(History* const h);
 
-#endif // EXPRESO_HISTORY_H
+#endif // EXPRESSO_HISTORY_H

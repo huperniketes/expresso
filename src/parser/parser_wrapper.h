@@ -1,5 +1,5 @@
-#ifndef EXPRESO_PARSER_WRAPPER_H
-#define EXPRESO_PARSER_WRAPPER_H
+#ifndef EXPRESSO_PARSER_WRAPPER_H
+#define EXPRESSO_PARSER_WRAPPER_H
 
 #include "value.h"
 
@@ -56,4 +56,4 @@ void expresso_parser_destroy(ExpressoParserContext* ctx);
 }
 #endif
 
-#endif // EXPRESO_PARSER_WRAPPER_H
+#endif // EXPRESSO_PARSER_WRAPPER_H

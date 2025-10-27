@@ -1,5 +1,5 @@
-#ifndef EXPRESO_VALUE_H
-#define EXPRESO_VALUE_H
+#ifndef EXPRESSO_VALUE_H
+#define EXPRESSO_VALUE_H
 
 #include <stdbool.h> // For bool
 #include <stddef.h>  // For size_t
@@ -61,4 +61,4 @@ void value_print(Value val); // For debugging/output
 }
 #endif
 
-#endif // EXPRESO_VALUE_H
+#endif // EXPRESSO_VALUE_H
