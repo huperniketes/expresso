@@ -3,6 +3,7 @@ add_library(expresso_core STATIC
     value.c
     evaluator.c
     history.c
+    operations.c
 )
 
 # Require C17 for the core library

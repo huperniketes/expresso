@@ -50,6 +50,7 @@
 #include "evaluator.h"
 #include "parser_wrapper.h"
 #include "value.h"
+#include "operations.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -116,19 +117,20 @@ Value visit_additive_expression(CExpressoVisitor* visitor, ExpressoParseTree* tr
     for (int i = 1; i < child_count; i += 2) {
         int op_type = expresso_tree_get_terminal_type(expresso_tree_get_child(tree, i));
         Value right = expresso_tree_accept(expresso_tree_get_child(tree, i + 1), visitor);
+        Value nextResult;
 
-        if (value_is_integer(result) && value_is_integer(right)) {
-            int l = value_as_integer(result);
-            int r = value_as_integer(right);
+        if (op_type == OP_ADD) {
+            nextResult = value_by_adding_values(result, right);
             value_destroy(result);
-            if (op_type == OP_ADD) {
-                result = value_create_integer(l + r);
-            } else if (op_type == OP_SUB) {
-                result = value_create_integer(l - r);
-            }
+            result = nextResult;
+        } else if (op_type == OP_SUB) {
+            nextResult = value_by_subtracting_values(result, right);
+            value_destroy(result);
+            result = nextResult;
         } else {
+            i = child_count;
             value_destroy(result);
-            result = value_create_error("Type error.");
+            result = value_create_error("Unknown operator.");
         }
         value_destroy(right);
     }
@@ -147,29 +149,24 @@ Value visit_multiplicative_expression(CExpressoVisitor* visitor, ExpressoParseTr
     for (int i = 1; i < child_count; i += 2) {
         int op_type = expresso_tree_get_terminal_type(expresso_tree_get_child(tree, i));
         Value right = expresso_tree_accept(expresso_tree_get_child(tree, i + 1), visitor);
+        Value nextResult;
 
-        if (value_is_integer(result) && value_is_integer(right)) {
-            int l = value_as_integer(result);
-            int r = value_as_integer(right);
+        if (op_type == OP_MUL) {
+            nextResult = value_by_multiplying_values(result, right);
             value_destroy(result);
-            if (op_type == OP_MUL) {
-                result = value_create_integer(l * r);
-            } else if (op_type == OP_DIV) {
-                if (r == 0) {
-                    result = value_create_error("Division by zero.");
-                } else {
-                    result = value_create_integer(l / r);
-                }
-            } else if (op_type == OP_MOD) {
-                if (r == 0) {
-                    result = value_create_error("Division by zero.");
-                } else {
-                    result = value_create_integer(l % r);
-                }
-            }
+            result = nextResult;
+        } else if (op_type == OP_DIV) {
+            nextResult = value_by_dividing_values(result, right);
+            value_destroy(result);
+            result = nextResult;
+        } else if (op_type == OP_MOD) {
+            nextResult = value_by_modulasing_values(result, right);
+            value_destroy(result);
+            result = nextResult;
         } else {
+            i = child_count;
             value_destroy(result);
-            result = value_create_error("Type error.");
+            result = value_create_error("Unknown operator.");
         }
         value_destroy(right);
     }
