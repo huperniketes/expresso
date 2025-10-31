@@ -66,6 +66,7 @@
 Value visit_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 Value visit_additive_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 Value visit_multiplicative_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
+Value visit_primary_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 Value visit_literal(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 
 Value evaluate_expression(ExpressoParseTree* tree) {
@@ -78,6 +79,7 @@ Value evaluate_expression(ExpressoParseTree* tree) {
         .visit_expression = visit_expression,
         .visit_additive_expression = visit_additive_expression,
         .visit_multiplicative_expression = visit_multiplicative_expression,
+        .visit_primary_expression = visit_primary_expression,
         .visit_literal = visit_literal,
     };
 
@@ -172,4 +174,22 @@ Value visit_multiplicative_expression(CExpressoVisitor* visitor, ExpressoParseTr
     }
 
     return result;
+}
+
+Value visit_primary_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree) {
+    ExpressoParseTree* child = expresso_tree_get_child(tree, 0);
+    int child_type = expresso_tree_get_type(child);
+
+    // If the child is a literal, visit it.
+    if (child_type == RuleLiteral) {
+        return expresso_tree_accept(child, visitor);
+    } else if (expresso_tree_get_child_count(tree) == 3) {
+        // If it's a parenthesized expression, visit the expression inside.
+        ExpressoParseTree* inner_expression = expresso_tree_get_child(tree, 1);
+        Value result = expresso_tree_accept(inner_expression, visitor);
+        expresso_tree_destroy(inner_expression);
+        return result;
+    }
+
+    return value_create_error("Invalid primary expression");
 }
