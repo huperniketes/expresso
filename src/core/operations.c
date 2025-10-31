@@ -151,7 +151,7 @@ Value value_by_negating_value(Value value) {
     return v;
 }
 
-Value value_by_notting_value(Value value) {
+Value value_by_logical_negating_value(Value value) {
     Value v;
     if (value_is_integer(value)) {
         v.type = VALUE_TYPE_INTEGER;
@@ -162,7 +162,7 @@ Value value_by_notting_value(Value value) {
     return v;
 }
 
-Value value_by_bitwise_notting_value(Value value) {
+Value value_by_bitwise_complementing_value(Value value) {
     Value v;
     if (value_is_integer(value)) {
         v.type = VALUE_TYPE_INTEGER;

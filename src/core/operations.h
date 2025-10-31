@@ -63,8 +63,8 @@ Value value_by_multiplying_values(Value leftValue, Value rightValue);
 Value value_by_dividing_values(Value leftValue, Value rightValue);
 Value value_by_modulasing_values(Value leftValue, Value rightValue);
 Value value_by_negating_value(Value value);
-Value value_by_notting_value(Value value);
-Value value_by_bitwise_notting_value(Value value);
+Value value_by_logical_negating_value(Value value);
+Value value_by_bitwise_complementing_value(Value value);
 
 #ifdef __cplusplus
 }
