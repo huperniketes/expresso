@@ -138,6 +138,7 @@ void test_evaluate_sequence_of_expressions() {
 }
 
 void test_evaluate_parenthesized_expression() {
+    char assert_msg[128];
     ExpressoParserContext* parser_ctx = expresso_parser_create();
     ASSERT_TRUE(parser_ctx != NULL, "Failed to create parser context");
 
@@ -146,7 +147,9 @@ void test_evaluate_parenthesized_expression() {
     ASSERT_TRUE(tree != NULL, "Failed to parse parenthesized expression");
 
     Value result = evaluate_expression(tree);
-    ASSERT_TRUE(value_is_integer(result), "Parenthesized expression result should be integer");
+    Value type = value_type_as_string(result);
+    snprintf(assert_msg, sizeof(assert_msg), "Parenthesized expression result is %s, but should be integer", value_as_string(type));
+    ASSERT_TRUE(value_is_integer(result), assert_msg);
     ASSERT_EQ(16, value_as_integer(result), "Parenthesized expression result is incorrect");
 
     value_destroy(result);
