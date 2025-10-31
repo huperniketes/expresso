@@ -137,12 +137,30 @@ void test_evaluate_sequence_of_expressions() {
     expresso_parser_destroy(parser_ctx);
 }
 
+void test_evaluate_parenthesized_expression() {
+    ExpressoParserContext* parser_ctx = expresso_parser_create();
+    ASSERT_TRUE(parser_ctx != NULL, "Failed to create parser context");
+
+    const char* expr = "(3 + 5) * 2";
+    ExpressoParseTree* tree = expresso_parser_parse(parser_ctx, expr);
+    ASSERT_TRUE(tree != NULL, "Failed to parse parenthesized expression");
+
+    Value result = evaluate_expression(tree);
+    ASSERT_TRUE(value_is_integer(result), "Parenthesized expression result should be integer");
+    ASSERT_EQ(16, value_as_integer(result), "Parenthesized expression result is incorrect");
+
+    value_destroy(result);
+    expresso_tree_destroy(tree);
+    expresso_parser_destroy(parser_ctx);
+}
+
 int main() {
     printf("Running Evaluator unit tests...\n");
     test_evaluate_arithmetic_operations();
     test_evaluate_hello_string();
     test_evaluate_unknown_expression();
     test_evaluate_sequence_of_expressions();
+    test_evaluate_parenthesized_expression();
     printf("All Evaluator unit tests passed!\n");
     return 0;
 }
