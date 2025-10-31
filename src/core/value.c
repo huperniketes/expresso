@@ -52,6 +52,14 @@
 #include <string.h>
 #include <math.h> // For isnan, isinf
 
+static const char * value_type_names[] = {
+	"Integer",
+	"Float",
+	"Character",
+	"String",
+	"Error"
+};
+
 // --- Value Creation Functions ---
 Value value_create_integer(long long val) {
     Value v;
@@ -194,4 +202,16 @@ void value_print(Value val) {
         case VALUE_TYPE_STRING: printf("\"%s\"", val.data.string_value); break;
         case VALUE_TYPE_ERROR: fprintf(stderr, "Error: %s", val.data.string_value); break;
     }
+}
+
+// Added for error-reporting purposes
+Value value_type_as_string(Value val) {
+    switch (val.type) {
+        case VALUE_TYPE_INTEGER:
+        case VALUE_TYPE_FLOAT:
+        case VALUE_TYPE_CHARACTER:
+        case VALUE_TYPE_STRING:
+        case VALUE_TYPE_ERROR:	return value_create_string(value_type_names[val.type]);
+    }
+    return value_create_error("Unknown value type.");
 }

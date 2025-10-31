@@ -104,6 +104,7 @@ const char* value_as_error_message(Value val);
 Value value_copy(Value val); // Creates a deep copy for strings
 bool value_equals(Value v1, Value v2);
 void value_print(Value val); // For debugging/output
+Value value_type_as_string(Value val); // For error-reporting/debugging
 
 #ifdef __cplusplus
 }
