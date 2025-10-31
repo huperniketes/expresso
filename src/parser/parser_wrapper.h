@@ -100,6 +100,7 @@ struct CExpressoVisitor {
     void* user_data;
     CVisitFunction visit_expression;
     CVisitFunction visit_primary_expression;
+    CVisitFunction visit_unary_expression;
     CVisitFunction visit_additive_expression;
     CVisitFunction visit_multiplicative_expression;
     CVisitFunction visit_literal;

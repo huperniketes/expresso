@@ -61,11 +61,14 @@
 #define OP_MUL 17
 #define OP_DIV 18
 #define OP_MOD 19
+#define OP_NOT 20
+#define OP_BIT_NOT 21
 
 // Forward declarations
 Value visit_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 Value visit_additive_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 Value visit_multiplicative_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
+Value visit_unary_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 Value visit_primary_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 Value visit_literal(CExpressoVisitor* visitor, ExpressoParseTree* tree);
 
@@ -79,6 +82,7 @@ Value evaluate_expression(ExpressoParseTree* tree) {
         .visit_expression = visit_expression,
         .visit_additive_expression = visit_additive_expression,
         .visit_multiplicative_expression = visit_multiplicative_expression,
+        .visit_unary_expression = visit_unary_expression,
         .visit_primary_expression = visit_primary_expression,
         .visit_literal = visit_literal,
     };
@@ -171,6 +175,39 @@ Value visit_multiplicative_expression(CExpressoVisitor* visitor, ExpressoParseTr
             result = value_create_error("Unknown operator.");
         }
         value_destroy(right);
+    }
+
+    return result;
+}
+
+Value visit_unary_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree) {
+    int child_count = expresso_tree_get_child_count(tree);
+    if (child_count == 1) {
+        return expresso_tree_accept(expresso_tree_get_child(tree, 0), visitor);
+    }
+
+    int op_type = expresso_tree_get_terminal_type(expresso_tree_get_child(tree, 0));
+    Value operand = expresso_tree_accept(expresso_tree_get_child(tree, 1), visitor);
+    Value result;
+
+    switch (op_type) {
+        case OP_ADD:
+            // Unary plus, no-op
+            result = operand;
+            break;
+        case OP_SUB:
+            value_destroy(operand);
+            break;
+        case OP_NOT:
+            value_destroy(operand);
+            break;
+        case OP_BIT_NOT:
+            value_destroy(operand);
+            break;
+        default:
+            value_destroy(operand);
+            result = value_create_error("Unknown unary operator.");
+            break;
     }
 
     return result;
