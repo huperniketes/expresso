@@ -139,3 +139,36 @@ Value value_by_modulasing_values(Value leftValue, Value rightValue) {
     }
     return v;
 }
+
+Value value_by_negating_value(Value value) {
+    Value v;
+    if (value_is_integer(value)) {
+        v.type = VALUE_TYPE_INTEGER;
+        v.data.integer_value = -value_as_integer(value);
+    } else {
+        v = value_create_error("Type error for negation.");
+    }
+    return v;
+}
+
+Value value_by_notting_value(Value value) {
+    Value v;
+    if (value_is_integer(value)) {
+        v.type = VALUE_TYPE_INTEGER;
+        v.data.integer_value = !value_as_integer(value);
+    } else {
+        v = value_create_error("Type error for logical NOT.");
+    }
+    return v;
+}
+
+Value value_by_bitwise_notting_value(Value value) {
+    Value v;
+    if (value_is_integer(value)) {
+        v.type = VALUE_TYPE_INTEGER;
+        v.data.integer_value = ~value_as_integer(value);
+    } else {
+        v = value_create_error("Type error for bitwise NOT.");
+    }
+    return v;
+}
