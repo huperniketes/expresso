@@ -55,6 +55,15 @@
 extern "C" {
 #endif
 
+  // Copied from ExpressoParser.h
+  enum {
+    RuleExpression = 0, RuleConditionalExpression = 1, RuleLogicalOrExpression = 2, 
+    RuleLogicalAndExpression = 3, RuleBitwiseOrExpression = 4, RuleBitwiseXorExpression = 5, 
+    RuleBitwiseAndExpression = 6, RuleEqualityExpression = 7, RuleRelationalExpression = 8, 
+    RuleShiftExpression = 9, RuleAdditiveExpression = 10, RuleMultiplicativeExpression = 11, 
+    RuleUnaryExpression = 12, RulePrimaryExpression = 13, RuleLiteral = 14
+  };
+
 // Forward declaration of the opaque parser context and parse tree
 typedef struct ExpressoParserContext ExpressoParserContext;
 typedef struct ExpressoParseTree ExpressoParseTree;
