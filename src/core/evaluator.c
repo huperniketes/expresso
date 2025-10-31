@@ -196,12 +196,15 @@ Value visit_unary_expression(CExpressoVisitor* visitor, ExpressoParseTree* tree)
             result = operand;
             break;
         case OP_SUB:
+            result = value_by_negating_value(operand);
             value_destroy(operand);
             break;
         case OP_NOT:
+            result = value_by_logical_negating_value(operand);
             value_destroy(operand);
             break;
         case OP_BIT_NOT:
+            result = value_by_bitwise_complementing_value(operand);
             value_destroy(operand);
             break;
         default:
