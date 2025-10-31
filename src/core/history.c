@@ -88,7 +88,7 @@ void history_destroy(const History* h) {
         free(h->entries[i]);
     }
     free(h->entries);
-    free(h);
+    free((void *)h);
 }
 
 void history_add(History* const h, const char* entry) {
