@@ -75,7 +75,7 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T021 [P] [US2] Test: Write an integration test in `tests/integration/test_non_interactive.c` to verify the `-e` flag (FR-013).
+- [X] T021 [P] [US2] Test: Write an integration test in `tests/integration/test_non_interactive.c` to verify the `-e` flag (FR-013).
 - [ ] T022 [P] [US2] Test: Write an integration test in `tests/integration/test_non_interactive.c` to verify file-based input (FR-012).
 - [ ] T023 [P] [US2] Test: Write an integration test in `tests/integration/test_non_interactive.c` to verify stdin piping (FR-014).
 - [ ] T024 [P] [US2] Test: Write an integration test in `tests/integration/test_non_interactive.c` to verify the `-o` output redirection flag (FR-015).
@@ -83,7 +83,7 @@
 ### Implementation for User Story 2
 
 - [ ] T025 [US2] Implement command-line argument parsing in `src/cli/main.c` to handle `-e`, `-o`, and file path arguments.
-- [ ] T026 [US2] Implement the logic for non-interactive mode: if `-e` is present, evaluate the expression and exit.
+- [X] T026 [US2] Implement the logic for non-interactive mode: if `-e` is present, evaluate the expression and exit.
 - [ ] T027 [US2] Implement the logic for file input mode: if a file path is provided, read and evaluate expressions from the file.
 - [ ] T028 [US2] Implement the logic for stdin piping: if no interactive terminal is detected, read and evaluate expressions from stdin.
 - [ ] T029 [US2] Implement output redirection to a file when the `-o` flag is used.
