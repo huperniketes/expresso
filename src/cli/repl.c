@@ -54,14 +54,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 static	History				*g_repl_history = NULL;
 
 // Placeholder for a readline-like function
 // This version will add to history, but not yet handle arrow keys
 char* read_line(const char* prompt) {
-    printf("%s", prompt);
-	fflush(stdout);
+    if (isatty(STDIN_FILENO)) {
+        printf("%s", prompt);
+        fflush(stdout);
+    }
     char* line = NULL;
     size_t len = 0;
     ssize_t read;
@@ -165,7 +168,7 @@ int read_eval_print(History *const h) {
         } else {
             Value eval_result = repl_evaluate_expression(input_line);
             value_print(eval_result);
-            printf("\n"); // Newline after result
+            printf("\n");
             value_destroy(eval_result);
         }
         free(input_line);

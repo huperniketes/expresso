@@ -77,7 +77,6 @@ int main(int argc, char* argv[]) {
 
     while(repl_read_eval_print() != 0)
         ;
-    printf("Exiting Expresso.\n");
 
     repl_shutdown(); // Clean up CLI interface
     return 0;
