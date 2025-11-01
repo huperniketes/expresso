@@ -49,8 +49,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include "repl.h"
+#include "evaluator.h"
+#include "parser_wrapper.h"
 
 int main(int argc, char* argv[]) {
+    if (argc == 3 && strcmp(argv[1], "-e") == 0) {
+        ExpressoParserContext* parser_ctx = expresso_parser_create();
+        ExpressoParseTree* tree = expresso_parser_parse(parser_ctx, argv[2]);
+        if (tree) {
+            Value result = evaluate_expression(tree);
+            value_print(result);
+            printf("\n");
+            value_destroy(result);
+            expresso_tree_destroy(tree);
+        }
+        expresso_parser_destroy(parser_ctx);
+        return 0;
+    }
 
     const char *err_string = repl_init(); // Initialize CLI interface
 
