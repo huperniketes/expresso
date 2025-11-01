@@ -174,6 +174,22 @@ public:
         return visitChildren(ctx);
     }
 
+    std::any visitUnaryExpression(ExpressoParser::UnaryExpressionContext *ctx) override {
+        if (visitor_->visit_unary_expression) {
+            ExpressoParseTree tree(ctx);
+            return visitor_->visit_unary_expression(visitor_, &tree);
+        }
+        return visitChildren(ctx);
+    }
+
+    std::any visitPrimaryExpression(ExpressoParser::PrimaryExpressionContext *ctx) override {
+        if (visitor_->visit_primary_expression) {
+            ExpressoParseTree tree(ctx);
+            return visitor_->visit_primary_expression(visitor_, &tree);
+        }
+        return visitChildren(ctx);
+    }
+
     std::any visitLiteral(ExpressoParser::LiteralContext *ctx) override {
         if (visitor_->visit_literal) {
             ExpressoParseTree tree(ctx);
