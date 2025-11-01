@@ -61,7 +61,7 @@
 - [X] T017 [US1] Integrate the history buffer with the input loop to allow up/down arrow history navigation (FR-008).
 - [X] T018 [US1] Implement the `!history`, `!clear`, and `!n` meta-commands in the input loop (FR-007, FR-009 from cli-interface).
 - [X] T019 [US1] Connect the input loop to the evaluator: pass valid expressions to the evaluator and print the result.
-- [ ] T020 [US1] Implement basic evaluation for simple arithmetic (`+`, `*`) in `src/core/evaluator.c`.
+- [X] T020 [US1] Implement basic evaluation for simple arithmetic (`+`, `*`) in `src/core/evaluator.c`.
 
 **Checkpoint**: User Story 1 is fully functional and testable independently.
 
