@@ -85,7 +85,9 @@ void test_file_input() {
     // Clean up the temporary file
     remove(filename);
 
-    ASSERT_TRUE(strcmp(buffer, "5\n") == 0, "Incorrect output for file input");
+    char assert_msg[1024];
+    snprintf(assert_msg, sizeof(assert_msg), "Incorrect output for file input. Expected \"5\\n\", got \"%s\"", buffer);
+    ASSERT_TRUE(strcmp(buffer, "5\n") == 0, assert_msg);
 }
 
 int main() {
