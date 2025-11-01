@@ -58,6 +58,11 @@ if(BUILD_TESTS)
 	add_executable(expresso_cpp_tests tests/unit/parser/test_placeholder.cpp)
 	target_link_libraries(expresso_cpp_tests PRIVATE expresso_parser GTest::gtest_main)
 	add_test(NAME expresso_cpp_tests COMMAND expresso_cpp_tests)
+
+	add_executable(test_non_interactive tests/integration/test_non_interactive.c)
+	target_link_libraries(test_non_interactive PRIVATE expresso)
+	target_include_directories(test_non_interactive PRIVATE tests/unit/core)
+	add_test(NAME test_non_interactive COMMAND test_non_interactive)
 endif()
 
 # Installation and export configuration
