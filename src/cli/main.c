@@ -53,20 +53,6 @@
 #include "parser_wrapper.h"
 
 int main(int argc, char* argv[]) {
-    if (argc == 3 && strcmp(argv[1], "-e") == 0) {
-        ExpressoParserContext* parser_ctx = expresso_parser_create();
-        ExpressoParseTree* tree = expresso_parser_parse(parser_ctx, argv[2]);
-        if (tree) {
-            Value result = evaluate_expression(tree);
-            value_print(result);
-            printf("\n");
-            value_destroy(result);
-            expresso_tree_destroy(tree);
-        }
-        expresso_parser_destroy(parser_ctx);
-        return 0;
-    }
-
     const char *err_string = repl_init(); // Initialize CLI interface
 
     if (err_string) {
@@ -75,8 +61,15 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    while(repl_read_eval_print() != 0)
-        ;
+    if ((argc != 3) || (strcmp(argv[1], "-e") != 0))
+    {
+        while(repl_read_eval_print() != 0)
+            ;
+	}
+	else
+	{
+		repl_eval_print(argv[2]);
+	}
 
     repl_shutdown(); // Clean up CLI interface
     return 0;
