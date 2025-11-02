@@ -53,7 +53,14 @@
 #include "parser_wrapper.h"
 
 int main(int argc, char* argv[]) {
-    const char *err_string = repl_init(); // Initialize CLI interface
+    repl_config config = {0};
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--force-prompts") == 0) {
+            config.force_prompt = 1;
+        }
+    }
+
+    const char *err_string = repl_init(&config); // Initialize CLI interface
 
     if (err_string) {
         fprintf(stderr, "Fatal Error: %s\n", err_string);
