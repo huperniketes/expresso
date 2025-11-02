@@ -58,6 +58,8 @@
 
 static	History				*g_repl_history = NULL;
 
+void print_value(Value *val);
+
 // Placeholder for a readline-like function
 // This version will add to history, but not yet handle arrow keys
 char* read_line(const char* prompt) {
@@ -167,7 +169,7 @@ int read_eval_print(History *const h) {
             }
         } else {
             Value eval_result = repl_evaluate_expression(input_line);
-            value_print(eval_result);
+            print_value(&eval_result);
             printf("\n");
             value_destroy(eval_result);
         }
@@ -178,4 +180,15 @@ int read_eval_print(History *const h) {
 
 int repl_read_eval_print() {
 	return	read_eval_print(g_repl_history);
+}
+
+void print_value(Value *val) {
+
+    switch (val->type) {
+        case VALUE_TYPE_INTEGER: printf("%lld", val->data.integer_value); break;
+        case VALUE_TYPE_FLOAT: printf("%f", val->data.float_value); break;
+        case VALUE_TYPE_CHARACTER: printf("'%c'", val->data.char_value); break;
+        case VALUE_TYPE_STRING: printf("\"%s\"", val->data.string_value); break;
+        case VALUE_TYPE_ERROR: fprintf(stderr, "Error: %s", val->data.string_value); break;
+    }
 }
