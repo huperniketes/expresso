@@ -64,7 +64,7 @@ void print_value(Value *val);
 // Placeholder for a readline-like function
 // This version will add to history, but not yet handle arrow keys
 char* read_line(const char* prompt) {
-    if (isatty(STDIN_FILENO)) {
+    if (g_force_prompt || isatty(STDIN_FILENO)) {
         printf("%s", prompt);
         fflush(stdout);
     }
