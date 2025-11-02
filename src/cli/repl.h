@@ -51,12 +51,16 @@
 
 #include "value.h" // For Value type
 
+typedef struct {
+    int force_prompt;
+} repl_config;
+
 // Initialize the CLI interface (e.g., parser context)
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-const char* repl_init();
+const char* repl_init(repl_config* config);
 
 // Clean up the CLI interface
 void repl_shutdown();

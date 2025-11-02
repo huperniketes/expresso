@@ -57,6 +57,7 @@
 #include <unistd.h>
 
 static	History				*g_repl_history = NULL;
+static	int					 g_force_prompt = 0;
 
 void print_value(Value *val);
 
@@ -86,7 +87,10 @@ char* read_line(const char* prompt) {
 // Global parser context (managed by C++ wrapper)
 static ExpressoParserContext* g_parser_ctx = NULL;
 
-const char* repl_init() {
+const char* repl_init(repl_config* config) {
+
+    if(config != NULL)
+        g_force_prompt = config->force_prompt;
 
     g_repl_history = history_create(10); // Create history with capacity 10 (FR-007)
     if (!g_repl_history) {
