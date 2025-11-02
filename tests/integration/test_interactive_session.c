@@ -58,7 +58,7 @@ int main() {
 
         // Execute the expresso CLI
         // The executable should be in the same directory as the test
-        execlp("./expresso", "expresso", (char *)NULL);
+        execlp("./expresso", "expresso", "--force-prompts", (char *)NULL);
 
         // If execlp returns, it must have failed
         perror("execlp");
