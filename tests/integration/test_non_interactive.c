@@ -48,12 +48,12 @@ void test_file_input() {
     char buffer[1024];
     int status;
     const char* filename = "temp_input.txt";
-    const char* expression = "2 + 3";
 
     // Create a temporary input file
     FILE* temp_file = fopen(filename, "w");
     ASSERT_TRUE(temp_file != NULL, "Failed to create temporary input file");
-    fprintf(temp_file, "%s\n", expression);
+    fprintf(temp_file, "2 + 3\n");
+    fprintf(temp_file, "(3 + 4) * 6 %% 5\n");
     fclose(temp_file);
 
     // Set up alarm handler
@@ -77,6 +77,14 @@ void test_file_input() {
 
     fgets(buffer, sizeof(buffer), fp);
 
+    char assert_msg[1024];
+    snprintf(assert_msg, sizeof(assert_msg), "Incorrect output for file input. Expected \"5\\n\", got \"%s\"", buffer);
+    ASSERT_TRUE(strcmp(buffer, "5\n") == 0, assert_msg);
+
+    fgets(buffer, sizeof(buffer), fp);
+    snprintf(assert_msg, sizeof(assert_msg), "Incorrect output for file input. Expected \"2\\n\", got \"%s\"", buffer);
+    ASSERT_TRUE(strcmp(buffer, "2\n") == 0, assert_msg);
+
     status = pclose(fp);
     ASSERT_TRUE(status != -1, "Failed to close popen stream");
 
@@ -84,10 +92,6 @@ void test_file_input() {
 
     // Clean up the temporary file
     remove(filename);
-
-    char assert_msg[1024];
-    snprintf(assert_msg, sizeof(assert_msg), "Incorrect output for file input. Expected \"5\\n\", got \"%s\"", buffer);
-    ASSERT_TRUE(strcmp(buffer, "5\n") == 0, assert_msg);
 }
 
 int main() {
