@@ -182,6 +182,14 @@ int repl_read_eval_print() {
 	return	read_eval_print(g_repl_history);
 }
 
+void repl_eval_print(const char *eval_str) {
+    Value eval_result = repl_evaluate_expression(eval_str);
+
+    print_value(&eval_result);
+    printf("\n");
+    value_destroy(eval_result);
+}
+
 void print_value(Value *val) {
 
     switch (val->type) {

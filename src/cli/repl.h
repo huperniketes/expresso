@@ -65,6 +65,7 @@ void repl_shutdown();
 // Returns the result as a Value
 Value repl_evaluate_expression(const char* input_line);
 
+void repl_eval_print(const char *eval_str);
 int repl_read_eval_print();
 
 #ifdef __cplusplus
