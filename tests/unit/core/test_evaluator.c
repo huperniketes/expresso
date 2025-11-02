@@ -89,7 +89,7 @@ void test_evaluate_hello_string() {
 
     Value result = evaluate_expression(tree);
     ASSERT_TRUE(value_is_string(result), "Result of '\"hello\"' should be string");
-    ASSERT_TRUE(strcmp("hello", value_as_string(result)) == 0, "Result of '\"hello\"' should be \"hello\"");
+    ASSERT_TRUE(strcmp("hello", value_c_str(result)) == 0, "Result of '\"hello\"' should be \"hello\"");
     value_destroy(result);
     expresso_tree_destroy(tree);
     expresso_parser_destroy(parser_ctx);
@@ -148,7 +148,7 @@ void test_evaluate_parenthesized_expression() {
 
     Value result = evaluate_expression(tree);
     Value type = value_type_as_string(result);
-    snprintf(assert_msg, sizeof(assert_msg), "Parenthesized expression result is %s, but should be integer", value_as_string(type));
+    snprintf(assert_msg, sizeof(assert_msg), "Parenthesized expression result is %s, but should be integer", value_c_str(type));
     ASSERT_TRUE(value_is_integer(result), assert_msg);
     ASSERT_EQ(16, value_as_integer(result), "Parenthesized expression result is incorrect");
 

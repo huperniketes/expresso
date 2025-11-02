@@ -27,7 +27,7 @@ void test_value_create_character() {
 void test_value_create_string() {
     Value v = value_create_string("hello");
     ASSERT_TRUE(value_is_string(v), "String value type check failed");
-    ASSERT_TRUE(strcmp("hello", value_as_string(v)) == 0, "String value content mismatch");
+    ASSERT_TRUE(strcmp("hello", value_c_str(v)) == 0, "String value content mismatch");
     value_destroy(v);
 }
 
@@ -42,8 +42,8 @@ void test_value_copy_string() {
     Value original = value_create_string("original");
     Value copy = value_copy(original);
     ASSERT_TRUE(value_is_string(copy), "Copied value is not string");
-    ASSERT_TRUE(strcmp(value_as_string(original), value_as_string(copy)) == 0, "Copied string content mismatch");
-    ASSERT_TRUE(value_as_string(original) != value_as_string(copy), "Copied string is not a deep copy");
+    ASSERT_TRUE(strcmp(value_c_str(original), value_c_str(copy)) == 0, "Copied string content mismatch");
+    ASSERT_TRUE(value_c_str(original) != value_c_str(copy), "Copied string is not a deep copy");
     value_destroy(original);
     value_destroy(copy);
 }

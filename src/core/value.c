@@ -215,3 +215,9 @@ Value value_type_as_string(Value val) {
     }
     return value_create_error("Unknown value type.");
 }
+
+const char* value_c_str(Value val) {
+    if (val.type == VALUE_TYPE_STRING || val.type == VALUE_TYPE_ERROR) return val.data.string_value;
+    fprintf(stderr, "Error: Attempted to access non-string value as string.\n");
+    exit(EXIT_FAILURE);
+}
